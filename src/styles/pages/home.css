@@ -1227,3 +1227,39 @@ body[data-history='open'] .history-panel {
   width: 100%;
   min-width: 0;
 }
+
+/* Estabilização do painel de orientações */
+
+.orientation-panel {
+  min-height: 150px;
+  height: 150px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.orientation-panel .side-panel__content {
+  flex: 1;
+
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 14px 18px;
+}
+
+.orientation-panel .side-panel__content p {
+  max-width: 100%;
+  margin: 0;
+
+  text-align: center;
+  line-height: 1.35;
+  font-size: 1.15rem;
+}
+
+.orientation-panel .side-panel__content p + p {
+  margin-top: 4px;
+}

@@ -1,134 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Time-Task</title>
+    <title>Time-Task</title>
 
-  <link rel="stylesheet" href="./src/styles/main.css" />
-</head>
-<body>
-  <div class="app">
-    <header class="app-title">
-      <h1>TIME-TASK</h1>
-    </header>
+    <link rel="stylesheet" href="./src/styles/main.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="app-title">
+        <h1>TIME-TASK</h1>
+      </header>
 
-    <main class="app-stage">
-      <aside class="side-area">
-        <section class="side-panel orientation-panel">
-          <h2>Tela Orientações</h2>
+      <main class="app-stage">
+        <aside class="side-area">
+          <section class="side-panel orientation-panel">
+            <h2>Orientações</h2>
 
-          <div class="side-panel__content">
-            <p>Mensagem dinâmica de</p>
-            <p>orientação para o usuário</p>
-          </div>
-        </section>
-
-        <section class="side-panel actions-panel">
-          <h2>Ações Extras</h2>
-
-          <div class="side-panel__content side-panel__content--actions">
-            <button class="button button--secondary" type="button">
-              Histórico
-            </button>
-          </div>
-        </section>
-      </aside>
-
-      <section class="mission-panel">
-        <div class="timer-display">
-          <span>00:00</span>
-        </div>
-
-        <form class="mission-form">
-          <input
-            class="mission-input"
-            type="text"
-            placeholder="Nome da Missão"
-            aria-label="Nome da missão"
-          />
-
-          <input
-            class="mission-input"
-            type="number"
-            min="1"
-            placeholder="Tempo da Missão"
-            aria-label="Tempo da missão em minutos"
-          />
-
-          <section class="task-box" aria-label="Lista de tarefas da missão">
-            <ul class="task-list">
-              <li class="task-item">
-                <label class="task-check">
-                  <input type="checkbox" />
-                  <span></span>
-                </label>
-
-                <input
-                  class="task-name"
-                  type="text"
-                  placeholder="Nome Tarefa"
-                  aria-label="Nome da tarefa"
-                />
-
-                <button class="task-remove" type="button" aria-label="Remover tarefa">
-                  x
-                </button>
-              </li>
-
-              <li class="task-item">
-                <label class="task-check">
-                  <input type="checkbox" />
-                  <span></span>
-                </label>
-
-                <input
-                  class="task-name"
-                  type="text"
-                  placeholder="Nome Tarefa"
-                  aria-label="Nome da tarefa"
-                />
-
-                <button class="task-remove" type="button" aria-label="Remover tarefa">
-                  x
-                </button>
-              </li>
-
-              <li class="task-item">
-                <label class="task-check">
-                  <input type="checkbox" />
-                  <span></span>
-                </label>
-
-                <input
-                  class="task-name"
-                  type="text"
-                  placeholder="Nome Tarefa"
-                  aria-label="Nome da tarefa"
-                />
-
-                <button class="task-remove" type="button" aria-label="Remover tarefa">
-                  x
-                </button>
-              </li>
-            </ul>
+            <div class="side-panel__content" id="orientation-message">
+              <p id="orientation-line-1">Defina sua missão, escolha o tempo</p>
+              <p id="orientation-line-2">e organize pequenas tarefas.</p>
+            </div>
           </section>
 
-          <button class="button button--secondary add-task-button" type="button">
-            Adicionar Tarefa
-          </button>
+          <section class="side-panel actions-panel">
+            <h2>Ações Extras</h2>
 
-          <button class="button button--primary start-button" type="button">
-            Começar Missão
-          </button>
-        </form>
-      </section>
+            <div class="side-panel__content side-panel__content--actions">
+              <button class="button button--secondary" type="button">Histórico</button>
+            </div>
+          </section>
+        </aside>
 
-      <div class="right-area" aria-hidden="true"></div>
-    </main>
-  </div>
+        <section class="mission-panel">
+          <div class="timer-display">
+            <span>00:00</span>
+          </div>
 
-  <script src="./src/scripts/main.js"></script>
-</body>
+          <form class="mission-form">
+            <input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" />
+
+            <input id="mission-time" class="mission-input" type="number" min="1" placeholder="Tempo em minutos" aria-label="Tempo da missão em minutos" />
+
+            <section class="task-box" aria-label="Lista de tarefas da missão">
+              <ul class="task-list" id="task-list"></ul>
+            </section>
+
+            <button id="add-task-button" class="button button--secondary add-task-button" type="button">Adicionar Tarefa</button>
+
+            <button id="start-mission-button" class="button button--primary start-button" type="button">Começar Missão</button>
+          </form>
+        </section>
+
+        <div class="right-area" aria-hidden="true"></div>
+      </main>
+    </div>
+
+    <script src="./src/scripts/main.js"></script>
+  </body>
 </html>

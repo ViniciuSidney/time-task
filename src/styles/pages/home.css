@@ -1,21 +1,34 @@
 :root {
-  --color-bg: #242424;
+  --color-bg: #202423;
+  --color-bg-glow: rgba(60, 173, 156, 0.16);
 
   --color-primary: #3cad9c;
+  --color-primary-light: #54c4b3;
   --color-primary-dark: #2b8276;
-  --color-primary-deep: #0a2d26;
-  --color-primary-inner: #145248;
+  --color-primary-deep: #072b25;
+  --color-primary-inner: #15564c;
+
+  --color-surface: rgba(60, 173, 156, 0.92);
+  --color-surface-soft: rgba(43, 130, 118, 0.92);
 
   --color-text: #ffffff;
-  --color-text-muted: rgba(255, 255, 255, 0.72);
+  --color-text-soft: rgba(255, 255, 255, 0.82);
+  --color-text-muted: rgba(255, 255, 255, 0.58);
 
   --color-danger: #8f263b;
-  --color-danger-light: #ff5f62;
+  --color-danger-light: #ff666b;
 
-  --shadow-text: 4px 5px 5px rgba(0, 0, 0, 0.55);
-  --shadow-panel: 0 10px 24px rgba(0, 0, 0, 0.22);
+  --shadow-text-strong: 3px 4px 5px rgba(0, 0, 0, 0.55);
+  --shadow-text-soft: 1px 2px 3px rgba(0, 0, 0, 0.45);
+  --shadow-panel: 0 18px 38px rgba(0, 0, 0, 0.28);
+  --shadow-panel-soft: 0 10px 22px rgba(0, 0, 0, 0.2);
+  --shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 
-  --font-main: "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+
+  --font-main: "Segoe UI", Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -27,7 +40,11 @@ body {
   min-width: 1180px;
   min-height: 100vh;
 
-  background: var(--color-bg);
+  background:
+    radial-gradient(circle at 50% 10%, var(--color-bg-glow), transparent 34rem),
+    radial-gradient(circle at 20% 80%, rgba(60, 173, 156, 0.08), transparent 26rem),
+    var(--color-bg);
+
   color: var(--color-text);
   font-family: var(--font-main);
 }
@@ -48,15 +65,18 @@ input {
 
 .app {
   min-height: 100vh;
-  padding: 45px 0;
+  padding: 44px 0;
 }
 
 .app-title {
   width: 420px;
-  margin: 0 auto 28px;
-  padding: 12px 24px;
+  margin: 0 auto 30px;
+  padding: 14px 24px;
 
-  background: var(--color-primary);
+  background:
+    linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xs);
   text-align: center;
   box-shadow: var(--shadow-panel);
 }
@@ -64,12 +84,13 @@ input {
 .app-title h1 {
   margin: 0;
 
-  font-size: 4rem;
-  font-weight: 400;
-  letter-spacing: 0.06em;
+  font-size: 3.65rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
   line-height: 1;
+  margin-bottom: 12px;
 
-  text-shadow: var(--shadow-text);
+  text-shadow: var(--shadow-text-strong);
 }
 
 .app-stage {
@@ -83,51 +104,57 @@ input {
 .side-area {
   display: flex;
   flex-direction: column;
-  gap: 330px;
-
-  padding-top: 0;
+  gap: 300px;
 }
 
 .side-panel {
   width: 320px;
-  padding: 8px 8px 10px;
+  padding: 9px;
 
-  background: var(--color-primary);
-  box-shadow: var(--shadow-panel);
+  background:
+    linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-panel-soft);
 }
 
 .side-panel h2 {
-  margin: 0 0 8px;
+  margin: 0 0 9px;
 
-  font-size: 1.7rem;
-  font-weight: 400;
+  font-size: 1.35rem;
+  font-weight: 600;
   line-height: 1;
   text-align: center;
 
-  text-shadow: var(--shadow-text);
+  text-shadow: var(--shadow-text-soft);
 }
 
 .side-panel__content {
-  min-height: 82px;
+  min-height: 84px;
   padding: 16px 14px;
 
   display: grid;
   place-items: center;
 
-  background: var(--color-primary-deep);
+  background:
+    linear-gradient(180deg, #082f29, var(--color-primary-deep));
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-inset);
   text-align: center;
 }
 
 .side-panel__content p {
   margin: 0;
 
-  font-size: 1.7rem;
-  line-height: 1.28;
-  text-shadow: var(--shadow-text);
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--color-text-soft);
+  text-shadow: var(--shadow-text-soft);
 }
 
 .side-panel__content--actions {
-  min-height: 72px;
+  min-height: 74px;
 }
 
 .mission-panel {
@@ -135,27 +162,38 @@ input {
   min-height: 640px;
   padding: 20px 28px 22px;
 
-  background: var(--color-primary);
+  background:
+    linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-panel);
 }
 
 .timer-display {
   height: 108px;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 
   display: grid;
   place-items: center;
 
-  background: var(--color-primary-inner);
+  background:
+    linear-gradient(180deg, #176255, #104c43);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xs);
+  box-shadow:
+    var(--shadow-inset),
+    0 10px 18px rgba(0, 0, 0, 0.16);
 }
 
 .timer-display span {
-  font-size: 5.7rem;
-  font-weight: 400;
+  font-size: 5.25rem;
   line-height: 1;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  text-align: center;
+margin-bottom: 12px;
 
-  text-shadow: var(--shadow-text);
+  text-shadow: var(--shadow-text-strong);
 }
 
 .mission-form {
@@ -166,33 +204,50 @@ input {
 
 .mission-input {
   width: 260px;
-  height: 38px;
-  margin-bottom: 14px;
+  height: 40px;
+  margin-bottom: 13px;
   padding: 0 14px;
 
-  background: var(--color-primary-dark);
+  background:
+    linear-gradient(180deg, #2e8b7e, #287b70);
   color: var(--color-text);
 
-  font-size: 1.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-inset);
+
+  font-size: 1.15rem;
+  font-weight: 600;
   text-align: center;
-  text-shadow: var(--shadow-text);
 }
 
 .mission-input::placeholder {
-  color: var(--color-text);
+  color: var(--color-text-soft);
   opacity: 1;
+}
+
+.mission-input:focus {
+  background: #236f65;
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.14),
+    var(--shadow-inset);
 }
 
 .task-box {
   width: 312px;
   height: 212px;
-  margin: 14px 0 24px;
+  margin: 14px 0 22px;
   padding: 8px 10px;
 
   overflow-y: auto;
 
-  background: var(--color-primary-deep);
-  border: 7px solid var(--color-primary-inner);
+  background:
+    linear-gradient(180deg, #082f29, #06251f);
+  border: 6px solid #145248;
+  border-radius: var(--radius-xs);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 10px 18px rgba(0, 0, 0, 0.14);
 }
 
 .task-box::-webkit-scrollbar {
@@ -200,11 +255,16 @@ input {
 }
 
 .task-box::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .task-box::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+}
+
+.task-box::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .task-list {
@@ -226,7 +286,15 @@ input {
   align-items: center;
   gap: 8px;
 
-  background: var(--color-primary-dark);
+  background:
+    linear-gradient(180deg, #319184, #2b8276);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xs);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.12);
+}
+
+.task-item:focus-within {
+  outline: 2px solid rgba(255, 255, 255, 0.18);
 }
 
 .task-check {
@@ -248,8 +316,13 @@ input {
   height: 28px;
   display: block;
 
-  background: transparent;
+  background: rgba(7, 43, 37, 0.25);
   border: 3px solid var(--color-primary-deep);
+  border-radius: 3px;
+}
+
+.task-check input:checked + span {
+  background: rgba(103, 210, 143, 0.18);
 }
 
 .task-check input:checked + span::after {
@@ -259,10 +332,11 @@ input {
   left: 5px;
   top: -1px;
 
-  color: #67d28f;
-  font-size: 1.45rem;
+  color: #75e69a;
+  font-size: 1.4rem;
+  font-weight: 800;
   line-height: 1;
-  text-shadow: var(--shadow-text);
+  text-shadow: var(--shadow-text-soft);
 }
 
 .task-name {
@@ -272,49 +346,83 @@ input {
   background: transparent;
   color: var(--color-text);
 
-  font-size: 1.35rem;
-  text-shadow: var(--shadow-text);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .task-name::placeholder {
-  color: var(--color-text);
+  color: var(--color-text-soft);
   opacity: 1;
+}
+
+.task-name:focus::placeholder {
+  color: var(--color-text-muted);
 }
 
 .task-remove {
   width: 24px;
-  height: 28px;
+  height: 24px;
   padding: 0;
 
   background: transparent;
   border: none;
-  color: var(--color-danger-light);
+  color: var(--color-danger);
 
-  font-size: 1.45rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 900;
   line-height: 1;
   text-shadow: none;
+  margin-bottom: 5px;
+
+  transition:
+    transform 0.16s ease,
+    color 0.16s ease;
+}
+
+.task-remove:hover {
+  color: #46090b;
+  transform: scale(1.12);
 }
 
 .button {
   border: none;
   color: var(--color-text);
-  background: var(--color-primary-dark);
+  background:
+    linear-gradient(180deg, #2f8b7f, #287a70);
 
-  font-size: 1.5rem;
-  font-weight: 400;
+  border-radius: var(--radius-xs);
+  box-shadow:
+    var(--shadow-inset),
+    0 8px 14px rgba(0, 0, 0, 0.14);
+
+  font-size: 1.18rem;
+  font-weight: 600;
   line-height: 1;
   text-align: center;
-  text-shadow: var(--shadow-text);
+  text-shadow: var(--shadow-text-soft);
 
   transition:
     filter 0.18s ease,
-    transform 0.18s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .button:hover {
   filter: brightness(1.08);
   transform: translateY(-1px);
+  box-shadow:
+    var(--shadow-inset),
+    0 12px 18px rgba(0, 0, 0, 0.18);
+}
+
+.button:active {
+  transform: translateY(0);
+  filter: brightness(0.96);
+}
+
+.button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 3px;
 }
 
 .button--secondary {
@@ -328,7 +436,10 @@ input {
   min-height: 56px;
   padding: 10px 24px;
 
-  font-size: 2rem;
+  background:
+    linear-gradient(180deg, #328f82, #267469);
+
+  font-size: 1.55rem;
 }
 
 .add-task-button {
@@ -341,4 +452,41 @@ input {
 
 .right-area {
   min-height: 1px;
+}
+
+.task-item.is-completed {
+  opacity: 0.62;
+}
+
+.task-item.is-completed .task-name {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.task-item.is-completed .task-remove {
+  opacity: 0.75;
+}
+
+.task-empty {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.task-name::selection,
+.mission-input::selection {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.button.is-disabled,
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  filter: none;
 }

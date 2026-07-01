@@ -1,3 +1,24 @@
+/* =========================================================
+   Time-Task - Página Home
+   Estrutura:
+   01. Variáveis
+   02. Reset/base
+   03. Layout principal
+   04. Painéis laterais
+   05. Painel da missão
+   06. Tarefas
+   07. Botões
+   08. Estados da aplicação
+   09. Histórico
+   10. Modais
+   11. Modelos
+   12. Correções específicas
+========================================================= */
+
+/* =========================================================
+   01. Variáveis
+========================================================= */
+
 :root {
 	--color-bg: #202423;
 	--color-bg-glow: rgba(60, 173, 156, 0.16);
@@ -8,28 +29,54 @@
 	--color-primary-deep: #072b25;
 	--color-primary-inner: #15564c;
 
-	--color-surface: rgba(60, 173, 156, 0.92);
-	--color-surface-soft: rgba(43, 130, 118, 0.92);
-
 	--color-text: #ffffff;
 	--color-text-soft: rgba(255, 255, 255, 0.82);
 	--color-text-muted: rgba(255, 255, 255, 0.58);
 
 	--color-danger: #8f263b;
+	--color-danger-dark: #7f2236;
 	--color-danger-light: #ff666b;
+
+	--gradient-page: radial-gradient(circle at 50% 10%, var(--color-bg-glow), transparent 34rem),
+		radial-gradient(circle at 20% 80%, rgba(60, 173, 156, 0.08), transparent 26rem),
+		var(--color-bg);
+
+	--gradient-panel: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+	--gradient-panel-header: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+	--gradient-inner: linear-gradient(180deg, #082f29, #06251f);
+	--gradient-timer: linear-gradient(180deg, #176255, #104c43);
+	--gradient-field: linear-gradient(180deg, #2e8b7e, #287b70);
+	--gradient-field-locked: linear-gradient(180deg, #2b8276, #247167);
+	--gradient-button: linear-gradient(180deg, #2f8b7f, #287a70);
+	--gradient-button-primary: linear-gradient(180deg, #328f82, #267469);
+	--gradient-button-danger: linear-gradient(180deg, #9f2e45, #7f2236);
+	--gradient-card: linear-gradient(180deg, #319184, #287b70);
 
 	--shadow-text-strong: 3px 4px 5px rgba(0, 0, 0, 0.55);
 	--shadow-text-soft: 1px 2px 3px rgba(0, 0, 0, 0.45);
 	--shadow-panel: 0 18px 38px rgba(0, 0, 0, 0.28);
 	--shadow-panel-soft: 0 10px 22px rgba(0, 0, 0, 0.2);
+	--shadow-card: 0 8px 14px rgba(0, 0, 0, 0.16);
 	--shadow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 
 	--radius-xs: 6px;
 	--radius-sm: 10px;
 	--radius-md: 16px;
 
+	--page-min-width: 1180px;
+	--main-panel-width: 420px;
+	--side-column-width: 380px;
+	--side-panel-width: 320px;
+	--panel-height: 640px;
+	--actions-panel-height: 290px;
+	--orientation-panel-height: 150px;
+
 	--font-main: 'Segoe UI', Arial, Helvetica, sans-serif;
 }
+
+/* =========================================================
+   02. Reset/base
+========================================================= */
 
 * {
 	box-sizing: border-box;
@@ -37,12 +84,12 @@
 
 body {
 	margin: 0;
-	min-width: 1180px;
+	min-width: var(--page-min-width);
 	min-height: 100vh;
 
-	background: radial-gradient(circle at 50% 10%, var(--color-bg-glow), transparent 34rem), radial-gradient(circle at 20% 80%, rgba(60, 173, 156, 0.08), transparent 26rem), var(--color-bg);
-
+	background: var(--gradient-page);
 	color: var(--color-text);
+
 	font-family: var(--font-main);
 }
 
@@ -60,54 +107,99 @@ input {
 	outline: none;
 }
 
+::selection {
+	background: rgba(255, 255, 255, 0.25);
+}
+
+/* Scrollbars internas */
+
+.task-box::-webkit-scrollbar,
+.history-list::-webkit-scrollbar,
+.template-list::-webkit-scrollbar {
+	width: 8px;
+}
+
+.task-box::-webkit-scrollbar-track,
+.history-list::-webkit-scrollbar-track,
+.template-list::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.04);
+}
+
+.task-box::-webkit-scrollbar-thumb,
+.history-list::-webkit-scrollbar-thumb,
+.template-list::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.72);
+	border-radius: 999px;
+}
+
+.task-box::-webkit-scrollbar-thumb:hover,
+.history-list::-webkit-scrollbar-thumb:hover,
+.template-list::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.9);
+}
+
+/* =========================================================
+   03. Layout principal
+========================================================= */
+
 .app {
 	min-height: 100vh;
 	padding: 44px 0;
 }
 
 .app-title {
-	width: 420px;
+	width: var(--main-panel-width);
 	margin: 0 auto 30px;
 	padding: 14px 24px;
 
-	background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+	background: var(--gradient-panel-header);
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	border-radius: var(--radius-xs);
-	text-align: center;
 	box-shadow: var(--shadow-panel);
+
+	text-align: center;
 }
 
 .app-title h1 {
-	margin: 0;
+	margin: 0 0 12px;
 
 	font-size: 3.65rem;
 	font-weight: 600;
 	letter-spacing: 0.07em;
 	line-height: 1;
-	margin-bottom: 12px;
 
 	text-shadow: var(--shadow-text-strong);
 }
 
 .app-stage {
 	display: grid;
-	grid-template-columns: 380px 420px 380px;
+	grid-template-columns: var(--side-column-width) var(--main-panel-width) var(--side-column-width);
 	gap: 34px;
 	justify-content: center;
 	align-items: start;
 }
 
+.right-area {
+	min-height: 1px;
+}
+
+/* =========================================================
+   04. Painéis laterais
+========================================================= */
+
 .side-area {
-	display: flex;
-	flex-direction: column;
-	gap: 300px;
+	height: var(--panel-height);
+
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	gap: 0;
 }
 
 .side-panel {
-	width: 320px;
+	width: var(--side-panel-width);
 	padding: 9px;
 
-	background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+	background: var(--gradient-panel-header);
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	border-radius: var(--radius-sm);
 	box-shadow: var(--shadow-panel-soft);
@@ -134,29 +226,104 @@ input {
 	background: linear-gradient(180deg, #082f29, var(--color-primary-deep));
 	border-radius: var(--radius-xs);
 	box-shadow: var(--shadow-inset);
+
 	text-align: center;
 }
 
 .side-panel__content p {
 	margin: 0;
 
+	color: var(--color-text-soft);
 	font-size: 1.25rem;
 	font-weight: 500;
 	line-height: 1.35;
-	color: var(--color-text-soft);
+
 	text-shadow: var(--shadow-text-soft);
 }
 
-.side-panel__content--actions {
-	min-height: 74px;
+/* Orientações */
+
+.orientation-panel {
+	grid-row: 1;
+
+	height: var(--orientation-panel-height);
+	min-height: var(--orientation-panel-height);
+
+	display: flex;
+	flex-direction: column;
 }
 
+.orientation-panel .side-panel__content {
+	flex: 1;
+	min-height: 0;
+	padding: 14px 18px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.orientation-panel .side-panel__content p {
+	max-width: 100%;
+	margin: 0;
+
+	font-size: 1.15rem;
+	line-height: 1.35;
+	text-align: center;
+}
+
+.orientation-panel .side-panel__content p + p {
+	margin-top: 4px;
+}
+
+/* Ações extras */
+
+.actions-panel {
+	grid-row: 3;
+
+	height: var(--actions-panel-height);
+
+	display: flex;
+	flex-direction: column;
+}
+
+.actions-panel .side-panel__content {
+	align-items: stretch;
+}
+
+.actions-panel .side-panel__content--actions {
+	flex: 1;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: stretch;
+	gap: 12px;
+}
+
+.actions-panel .button {
+	width: 100%;
+	min-width: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	text-align: center;
+	line-height: 1.1;
+}
+
+/* =========================================================
+   05. Painel da missão
+========================================================= */
+
 .mission-panel {
-	width: 420px;
-	min-height: 640px;
+	width: var(--main-panel-width);
+	min-height: var(--panel-height);
 	padding: 20px 28px 22px;
 
-	background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+	background: var(--gradient-panel);
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	border-radius: var(--radius-sm);
 	box-shadow: var(--shadow-panel);
@@ -169,7 +336,7 @@ input {
 	display: grid;
 	place-items: center;
 
-	background: linear-gradient(180deg, #176255, #104c43);
+	background: var(--gradient-timer);
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	border-radius: var(--radius-xs);
 	box-shadow:
@@ -178,12 +345,13 @@ input {
 }
 
 .timer-display span {
+	margin-bottom: 12px;
+
 	font-size: 5.25rem;
+	font-weight: 700;
 	line-height: 1;
 	letter-spacing: 0.05em;
-	font-weight: 700;
 	text-align: center;
-	margin-bottom: 12px;
 
 	text-shadow: var(--shadow-text-strong);
 }
@@ -200,7 +368,7 @@ input {
 	margin-bottom: 13px;
 	padding: 0 14px;
 
-	background: linear-gradient(180deg, #2e8b7e, #287b70);
+	background: var(--gradient-field);
 	color: var(--color-text);
 
 	border: 1px solid rgba(255, 255, 255, 0.1);
@@ -224,6 +392,15 @@ input {
 		var(--shadow-inset);
 }
 
+.mission-input[readonly] {
+	cursor: default;
+	opacity: 0.92;
+}
+
+/* =========================================================
+   06. Tarefas
+========================================================= */
+
 .task-box {
 	width: 312px;
 	height: 212px;
@@ -232,29 +409,12 @@ input {
 
 	overflow-y: auto;
 
-	background: linear-gradient(180deg, #082f29, #06251f);
+	background: var(--gradient-inner);
 	border: 6px solid #145248;
 	border-radius: var(--radius-xs);
 	box-shadow:
 		inset 0 0 0 1px rgba(255, 255, 255, 0.05),
 		0 10px 18px rgba(0, 0, 0, 0.14);
-}
-
-.task-box::-webkit-scrollbar {
-	width: 8px;
-}
-
-.task-box::-webkit-scrollbar-track {
-	background: rgba(255, 255, 255, 0.04);
-}
-
-.task-box::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.72);
-	border-radius: 999px;
-}
-
-.task-box::-webkit-scrollbar-thumb:hover {
-	background: rgba(255, 255, 255, 0.9);
 }
 
 .task-list {
@@ -286,16 +446,43 @@ input {
 	outline: 2px solid rgba(255, 255, 255, 0.18);
 }
 
+.task-item.is-completed {
+	opacity: 0.62;
+}
+
+.task-item.is-completed .task-name {
+	color: var(--color-text-muted);
+	text-decoration: line-through;
+}
+
+.task-item.is-completed .task-remove {
+	opacity: 0.75;
+}
+
+.task-empty {
+	min-height: 100%;
+
+	display: grid;
+	place-items: center;
+
+	color: var(--color-text-muted);
+	font-size: 1rem;
+	font-weight: 600;
+	text-align: center;
+}
+
 .task-check {
 	position: relative;
 
 	width: 28px;
 	height: 28px;
+
 	display: block;
 }
 
 .task-check input {
 	position: absolute;
+
 	opacity: 0;
 	pointer-events: none;
 }
@@ -303,6 +490,7 @@ input {
 .task-check span {
 	width: 28px;
 	height: 28px;
+
 	display: block;
 
 	background: rgba(7, 43, 37, 0.25);
@@ -325,6 +513,7 @@ input {
 	font-size: 1.4rem;
 	font-weight: 800;
 	line-height: 1;
+
 	text-shadow: var(--shadow-text-soft);
 }
 
@@ -351,6 +540,7 @@ input {
 .task-remove {
 	width: 24px;
 	height: 24px;
+	margin-bottom: 5px;
 	padding: 0;
 
 	background: transparent;
@@ -361,7 +551,6 @@ input {
 	font-weight: 900;
 	line-height: 1;
 	text-shadow: none;
-	margin-bottom: 5px;
 
 	transition:
 		transform 0.16s ease,
@@ -373,12 +562,29 @@ input {
 	transform: scale(1.12);
 }
 
+.task-progress {
+	display: none;
+	margin: -12px 0 12px;
+
+	color: var(--color-text-soft);
+	font-size: 0.95rem;
+	font-weight: 700;
+	text-align: center;
+
+	text-shadow: var(--shadow-text-soft);
+}
+
+/* =========================================================
+   07. Botões
+========================================================= */
+
 .button {
 	border: none;
-	color: var(--color-text);
-	background: linear-gradient(180deg, #2f8b7f, #287a70);
-
 	border-radius: var(--radius-xs);
+
+	color: var(--color-text);
+	background: var(--gradient-button);
+
 	box-shadow:
 		var(--shadow-inset),
 		0 8px 14px rgba(0, 0, 0, 0.14);
@@ -404,13 +610,21 @@ input {
 }
 
 .button:active {
-	transform: translateY(0);
 	filter: brightness(0.96);
+	transform: translateY(0);
 }
 
 .button:focus-visible {
 	outline: 3px solid rgba(255, 255, 255, 0.2);
 	outline-offset: 3px;
+}
+
+.button:disabled,
+.button.is-disabled {
+	cursor: not-allowed;
+	opacity: 0.5;
+	filter: none;
+	transform: none;
 }
 
 .button--secondary {
@@ -424,9 +638,22 @@ input {
 	min-height: 56px;
 	padding: 10px 24px;
 
-	background: linear-gradient(180deg, #328f82, #267469);
+	background: var(--gradient-button-primary);
 
 	font-size: 1.55rem;
+}
+
+.button--danger {
+	min-width: 0;
+	min-height: 40px;
+	padding: 7px 14px;
+
+	background: var(--gradient-button-danger);
+	color: #ffffff;
+}
+
+.button--danger:hover {
+	filter: brightness(1.08);
 }
 
 .add-task-button {
@@ -437,62 +664,65 @@ input {
 	margin-top: 0;
 }
 
-.right-area {
-	min-height: 1px;
-}
+.danger-actions,
+.finished-actions {
+	width: 100%;
 
-.task-item.is-completed {
-	opacity: 0.62;
-}
-
-.task-item.is-completed .task-name {
-	color: var(--color-text-muted);
-	text-decoration: line-through;
-}
-
-.task-item.is-completed .task-remove {
-	opacity: 0.75;
-}
-
-.task-empty {
-	min-height: 100%;
 	display: grid;
-	place-items: center;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 12px;
+}
 
-	color: var(--color-text-muted);
+.danger-actions .button,
+.finished-actions .button {
+	width: 100%;
+	min-width: 0;
+	min-height: 42px;
+	padding: 8px 10px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
 	font-size: 1rem;
-	font-weight: 600;
 	text-align: center;
+	white-space: nowrap;
 }
 
-.task-name::selection,
-.mission-input::selection {
-	background: rgba(255, 255, 255, 0.25);
-}
+/* =========================================================
+   08. Estados da aplicação
+========================================================= */
 
-.button.is-disabled,
-.button:disabled {
-	cursor: not-allowed;
-	opacity: 0.55;
-	transform: none;
-	filter: none;
-}
+/* Visibilidade por estado */
 
-/* Estados da tela */
-
-.running-only {
+.running-only,
+.finished-only {
 	display: none !important;
 }
 
 body[data-screen='running'] .running-only,
 body[data-screen='paused'] .running-only {
-	display: block !important;
+	display: flex !important;
 }
 
 body[data-screen='running'] .danger-actions.running-only,
 body[data-screen='paused'] .danger-actions.running-only {
 	display: grid !important;
 }
+
+body[data-screen='finished'] .finished-only {
+	display: flex !important;
+}
+
+body[data-screen='finished'] .finished-actions.finished-only {
+	display: grid !important;
+}
+
+body[data-screen='finished'] .running-only {
+	display: none !important;
+}
+
+/* Estados da missão */
 
 body[data-screen='running'] .mission-panel,
 body[data-screen='paused'] .mission-panel {
@@ -502,70 +732,10 @@ body[data-screen='paused'] .mission-panel {
 		0 0 32px rgba(60, 173, 156, 0.12);
 }
 
-body[data-screen='paused'] .timer-display {
-	filter: saturate(0.75);
-}
-
-body[data-screen='paused'] .timer-display span {
-	opacity: 0.72;
-}
-
-body[data-screen='finished'] .mission-panel {
-	filter: saturate(0.9);
-}
-
-/* Ações extras */
-
-.side-panel__content--actions {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.danger-actions {
-	width: 100%;
-	grid-template-columns: 1fr 1fr;
-	gap: 12px;
-}
-
-.button--danger {
-	min-width: 0;
-	min-height: 40px;
-	padding: 7px 14px;
-
-	background: linear-gradient(180deg, #9f2e45, #7f2236);
-
-	color: #ffffff;
-}
-
-.button--danger:hover {
-	filter: brightness(1.08);
-}
-
-/* Campos travados durante a execução */
-
-.mission-input[readonly] {
-	cursor: default;
-	opacity: 0.92;
-}
-
 body[data-screen='running'] .mission-input,
 body[data-screen='paused'] .mission-input,
 body[data-screen='finished'] .mission-input {
-	background: linear-gradient(180deg, #2b8276, #247167);
-}
-
-/* Progresso das tarefas */
-
-.task-progress {
-	display: none;
-	margin: -12px 0 12px;
-
-	color: var(--color-text-soft);
-	font-size: 0.95rem;
-	font-weight: 700;
-	text-align: center;
-	text-shadow: var(--shadow-text-soft);
+	background: var(--gradient-field-locked);
 }
 
 body[data-screen='running'] .task-progress,
@@ -574,76 +744,20 @@ body[data-screen='finished'] .task-progress {
 	display: block;
 }
 
-/* Estados do timer */
+/* Estado pausado */
 
-.timer-display.is-warning span {
-	color: #ffe08a;
+body[data-screen='paused'] .timer-display {
+	filter: saturate(0.75);
 }
 
-.timer-display.is-finished span {
-	color: #9ff2bd;
+body[data-screen='paused'] .timer-display span {
+	opacity: 0.72;
 }
 
-/* Estado finalizado das tarefas */
+/* Estado finalizado */
 
-.task-item.is-completed {
-	opacity: 0.62;
-}
-
-.task-item.is-completed .task-name {
-	color: var(--color-text-muted);
-	text-decoration: line-through;
-}
-
-.task-item.is-completed .task-remove {
-	opacity: 0.75;
-}
-
-/* Estado vazio */
-
-.task-empty {
-	min-height: 100%;
-	display: grid;
-	place-items: center;
-
-	color: var(--color-text-muted);
-	font-size: 1rem;
-	font-weight: 600;
-	text-align: center;
-}
-
-/* Botões desativados */
-
-.button.is-disabled,
-.button:disabled {
-	cursor: not-allowed;
-	opacity: 0.5;
-	transform: none;
-	filter: none;
-}
-
-/* Ações da tela finalizada */
-
-.finished-only {
-	display: none !important;
-}
-
-body[data-screen='finished'] .finished-only {
-	display: inline-flex !important;
-}
-
-body[data-screen='finished'] .finished-actions.finished-only {
-	display: grid !important;
-}
-
-.finished-actions {
-	width: 100%;
-	grid-template-columns: 1fr 1fr;
-	gap: 12px;
-}
-
-body[data-screen='finished'] .running-only {
-	display: none !important;
+body[data-screen='finished'] .mission-panel {
+	filter: saturate(0.9);
 }
 
 body[data-screen='finished'] .timer-display {
@@ -666,82 +780,26 @@ body[data-screen='finished'] .task-check {
 	pointer-events: none;
 }
 
-/* Correção de layout das ações extras */
+/* Estados do timer */
 
-.actions-panel .side-panel__content {
-	align-items: stretch;
+.timer-display.is-warning span {
+	color: #ffe08a;
 }
 
-.actions-panel .button {
-	width: 100%;
-	min-width: 0;
+.timer-display.is-finished span {
+	color: #9ff2bd;
 }
 
-.actions-panel .button--secondary {
-	min-width: 0;
-}
-
-.finished-actions,
-.danger-actions {
-	width: 100%;
-}
-
-.finished-actions .button,
-.danger-actions .button {
-	width: 100%;
-	min-width: 0;
-	padding-inline: 10px;
-	font-size: 1rem;
-	white-space: nowrap;
-}
-
-.finished-actions {
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.danger-actions {
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-/* Centralização interna dos botões do painel de ações */
-
-.actions-panel .button {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	text-align: center;
-	line-height: 1.1;
-}
-
-.actions-panel .side-panel__content--actions {
-	align-items: stretch;
-}
-
-.actions-panel .button--secondary,
-.actions-panel .button--danger {
-	width: 100%;
-	min-width: 0;
-}
-
-.finished-actions .button {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	min-height: 42px;
-	padding: 8px 10px;
-	text-align: center;
-}
-
-/* Painel de histórico */
+/* =========================================================
+   09. Histórico
+========================================================= */
 
 .history-panel {
 	width: 380px;
-	min-height: 640px;
+	min-height: var(--panel-height);
 	padding: 9px 12px 14px;
 
-	background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+	background: var(--gradient-panel);
 	border: 1px solid rgba(255, 255, 255, 0.12);
 	border-radius: var(--radius-sm);
 	box-shadow: var(--shadow-panel);
@@ -767,12 +825,12 @@ body[data-history='open'] .history-panel {
 .history-panel__header {
 	position: relative;
 
+	min-height: 34px;
+	margin-bottom: 10px;
+
 	display: flex;
 	align-items: center;
 	justify-content: center;
-
-	min-height: 34px;
-	margin-bottom: 10px;
 }
 
 .history-panel__header h2 {
@@ -782,13 +840,14 @@ body[data-history='open'] .history-panel {
 	font-weight: 700;
 	line-height: 1;
 	text-align: center;
+
 	text-shadow: var(--shadow-text-soft);
 }
 
 .history-close-button {
 	position: absolute;
-	right: 4px;
 	top: 0;
+	right: 4px;
 
 	width: 34px;
 	height: 34px;
@@ -809,33 +868,20 @@ body[data-history='open'] .history-panel {
 }
 
 .history-close-button:hover {
-	transform: scale(1.08);
 	filter: brightness(1.12);
+	transform: scale(1.08);
 }
 
 .history-list {
 	height: 520px;
-	padding: 12px;
 	margin-bottom: 12px;
+	padding: 12px;
 
 	overflow-y: auto;
 
-	background: linear-gradient(180deg, #082f29, #06251f);
+	background: var(--gradient-inner);
 	border-radius: var(--radius-xs);
 	box-shadow: var(--shadow-inset);
-}
-
-.history-list::-webkit-scrollbar {
-	width: 8px;
-}
-
-.history-list::-webkit-scrollbar-track {
-	background: rgba(255, 255, 255, 0.04);
-}
-
-.history-list::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.72);
-	border-radius: 999px;
 }
 
 .history-empty {
@@ -852,13 +898,13 @@ body[data-history='open'] .history-panel {
 }
 
 .history-card {
-	padding: 10px;
 	margin-bottom: 14px;
+	padding: 10px;
 
-	background: linear-gradient(180deg, #319184, #287b70);
+	background: var(--gradient-card);
 	border: 1px solid rgba(255, 255, 255, 0.08);
 	border-radius: var(--radius-xs);
-	box-shadow: 0 8px 14px rgba(0, 0, 0, 0.16);
+	box-shadow: var(--shadow-card);
 }
 
 .history-card:last-child {
@@ -866,11 +912,12 @@ body[data-history='open'] .history-panel {
 }
 
 .history-card__top {
+	margin-bottom: 8px;
+
 	display: grid;
 	grid-template-columns: 1fr auto;
-	gap: 10px;
 	align-items: start;
-	margin-bottom: 8px;
+	gap: 10px;
 }
 
 .history-card__title {
@@ -879,6 +926,7 @@ body[data-history='open'] .history-panel {
 	font-size: 1.15rem;
 	font-weight: 800;
 	line-height: 1.1;
+
 	text-shadow: var(--shadow-text-soft);
 }
 
@@ -889,15 +937,17 @@ body[data-history='open'] .history-panel {
 	color: var(--color-text-soft);
 	font-size: 0.95rem;
 	font-weight: 800;
-	text-align: right;
 	line-height: 1.05;
+	text-align: right;
+
 	text-shadow: var(--shadow-text-soft);
 }
 
 .history-card__meta {
+	margin-bottom: 10px;
+
 	display: grid;
 	gap: 4px;
-	margin-bottom: 10px;
 
 	color: var(--color-text-soft);
 	font-size: 0.84rem;
@@ -916,8 +966,8 @@ body[data-history='open'] .history-panel {
 
 .history-repeat-button,
 .history-delete-button {
-	min-width: 0;
 	width: 100%;
+	min-width: 0;
 	min-height: 36px;
 
 	display: flex;
@@ -928,7 +978,7 @@ body[data-history='open'] .history-panel {
 }
 
 .history-delete-button {
-	background: linear-gradient(180deg, #9f2e45, #7f2236);
+	background: var(--gradient-button-danger);
 }
 
 .history-clear-button {
@@ -944,38 +994,20 @@ body[data-history='open'] .history-panel {
 	font-size: 1.08rem;
 }
 
-/* Correção do autofill dos campos */
-
-.mission-input:-webkit-autofill,
-.mission-input:-webkit-autofill:hover,
-.mission-input:-webkit-autofill:focus,
-.task-name:-webkit-autofill,
-.task-name:-webkit-autofill:hover,
-.task-name:-webkit-autofill:focus {
-	-webkit-text-fill-color: var(--color-text);
-	caret-color: var(--color-text);
-	box-shadow: 0 0 0 1000px #287b70 inset;
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	transition: background-color 9999s ease-in-out 0s;
-}
-
-.task-name:-webkit-autofill,
-.task-name:-webkit-autofill:hover,
-.task-name:-webkit-autofill:focus {
-	box-shadow: 0 0 0 1000px #2b8276 inset;
-}
-
-/* Modal */
+/* =========================================================
+   10. Modais
+========================================================= */
 
 .modal-backdrop {
 	position: fixed;
 	inset: 0;
 	z-index: 100;
 
+	padding: 24px;
+
 	display: grid;
 	place-items: center;
 
-	padding: 24px;
 	background: rgba(0, 0, 0, 0.58);
 	backdrop-filter: blur(4px);
 }
@@ -989,7 +1021,7 @@ body[data-history='open'] .history-panel {
 	width: min(430px, 100%);
 	padding: 10px;
 
-	background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+	background: var(--gradient-panel);
 	border: 1px solid rgba(255, 255, 255, 0.14);
 	border-radius: var(--radius-sm);
 	box-shadow:
@@ -1019,13 +1051,14 @@ body[data-history='open'] .history-panel {
 	font-size: 1.45rem;
 	line-height: 1.1;
 	text-align: center;
+
 	text-shadow: var(--shadow-text-soft);
 }
 
 .modal-close-button {
 	position: absolute;
-	right: 2px;
 	top: 0;
+	right: 2px;
 
 	width: 38px;
 	height: 38px;
@@ -1039,6 +1072,10 @@ body[data-history='open'] .history-panel {
 	font-weight: 900;
 	line-height: 1;
 	text-shadow: var(--shadow-text-soft);
+
+	transition:
+		filter 0.16s ease,
+		transform 0.16s ease;
 }
 
 .modal-close-button:hover {
@@ -1049,7 +1086,7 @@ body[data-history='open'] .history-panel {
 .app-modal__body {
 	padding: 18px;
 
-	background: linear-gradient(180deg, #082f29, #06251f);
+	background: var(--gradient-inner);
 	border-radius: var(--radius-xs);
 	box-shadow: var(--shadow-inset);
 }
@@ -1065,11 +1102,11 @@ body[data-history='open'] .history-panel {
 }
 
 .app-modal__footer {
+	margin-top: 12px;
+
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 12px;
-
-	margin-top: 12px;
 }
 
 .app-modal__footer .button {
@@ -1082,46 +1119,45 @@ body[data-history='open'] .history-panel {
 	justify-content: center;
 }
 
-/* Modelos */
+.modal-empty {
+	min-height: 120px;
+
+	display: grid;
+	place-items: center;
+
+	color: var(--color-text-muted);
+}
+
+/* =========================================================
+   11. Modelos
+========================================================= */
 
 .template-list {
+	max-height: 420px;
+	padding-right: 4px;
+
 	display: grid;
 	gap: 12px;
 
-	max-height: 420px;
 	overflow-y: auto;
-	padding-right: 4px;
-}
-
-.template-list::-webkit-scrollbar {
-	width: 8px;
-}
-
-.template-list::-webkit-scrollbar-track {
-	background: rgba(255, 255, 255, 0.04);
-}
-
-.template-list::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.72);
-	border-radius: 999px;
 }
 
 .template-card {
 	padding: 12px;
 
-	background: linear-gradient(180deg, #319184, #287b70);
+	background: var(--gradient-card);
 	border: 1px solid rgba(255, 255, 255, 0.08);
 	border-radius: var(--radius-xs);
-	box-shadow: 0 8px 14px rgba(0, 0, 0, 0.16);
+	box-shadow: var(--shadow-card);
 }
 
 .template-card__top {
+	margin-bottom: 8px;
+
 	display: grid;
 	grid-template-columns: 1fr auto;
-	gap: 12px;
 	align-items: start;
-
-	margin-bottom: 8px;
+	gap: 12px;
 }
 
 .template-card__title {
@@ -1130,14 +1166,15 @@ body[data-history='open'] .history-panel {
 	font-size: 1.1rem;
 	font-weight: 800;
 	line-height: 1.15;
+
 	text-shadow: var(--shadow-text-soft);
 }
 
 .template-card__meta {
+	margin-bottom: 10px;
+
 	display: grid;
 	gap: 4px;
-
-	margin-bottom: 10px;
 
 	color: var(--color-text-soft);
 	font-size: 0.86rem;
@@ -1162,104 +1199,27 @@ body[data-history='open'] .history-panel {
 	font-size: 0.95rem;
 }
 
-.modal-empty {
-	min-height: 120px;
+/* =========================================================
+   12. Correções específicas
+========================================================= */
 
-	display: grid;
-	place-items: center;
+/* Autofill do navegador */
 
-	color: var(--color-text-muted);
+.mission-input:-webkit-autofill,
+.mission-input:-webkit-autofill:hover,
+.mission-input:-webkit-autofill:focus,
+.task-name:-webkit-autofill,
+.task-name:-webkit-autofill:hover,
+.task-name:-webkit-autofill:focus {
+	-webkit-text-fill-color: var(--color-text);
+	caret-color: var(--color-text);
+	box-shadow: 0 0 0 1000px #287b70 inset;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	transition: background-color 9999s ease-in-out 0s;
 }
 
-/* Estabilização da coluna lateral */
-
-.side-area {
-  height: 640px;
-
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 0;
-}
-
-.orientation-panel {
-  grid-row: 1;
-}
-
-.actions-panel {
-  grid-row: 3;
-
-  height: 290px;
-  display: flex;
-  flex-direction: column;
-}
-
-.actions-panel .side-panel__content--actions {
-  flex: 1;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-
-  gap: 12px;
-}
-
-.actions-panel .button {
-  width: 100%;
-  min-width: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  text-align: center;
-}
-
-.finished-actions,
-.danger-actions {
-  width: 100%;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
-}
-
-.finished-actions .button,
-.danger-actions .button {
-  width: 100%;
-  min-width: 0;
-}
-
-/* Estabilização do painel de orientações */
-
-.orientation-panel {
-  min-height: 150px;
-  height: 150px;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.orientation-panel .side-panel__content {
-  flex: 1;
-
-  min-height: 0;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding: 14px 18px;
-}
-
-.orientation-panel .side-panel__content p {
-  max-width: 100%;
-  margin: 0;
-
-  text-align: center;
-  line-height: 1.35;
-  font-size: 1.15rem;
-}
-
-.orientation-panel .side-panel__content p + p {
-  margin-top: 4px;
+.task-name:-webkit-autofill,
+.task-name:-webkit-autofill:hover,
+.task-name:-webkit-autofill:focus {
+	box-shadow: 0 0 0 1000px #2b8276 inset;
 }

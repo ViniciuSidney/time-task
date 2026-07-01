@@ -1,192 +1,134 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-		<title>Time-Task</title>
+  <title>Time-Task</title>
 
-		<link rel="stylesheet" href="./src/styles/main.css" />
-	</head>
-	<body>
-		<div class="app-shell">
-			<header class="app-header">
-				<div class="app-header__brand">
-					<span class="app-header__icon">⏱️</span>
+  <link rel="stylesheet" href="./src/styles/main.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-title">
+      <h1>TIME-TASK</h1>
+    </header>
 
-					<div>
-						<h1>Time-Task</h1>
-						<p>Timer com microtarefas para foco imediato.</p>
-					</div>
-				</div>
+    <main class="app-stage">
+      <aside class="side-area">
+        <section class="side-panel orientation-panel">
+          <h2>Tela Orientações</h2>
 
-				<button class="theme-toggle" type="button" aria-label="Alternar tema">🌙</button>
-			</header>
+          <div class="side-panel__content">
+            <p>Mensagem dinâmica de</p>
+            <p>orientação para o usuário</p>
+          </div>
+        </section>
 
-			<main class="home-page">
-				<section class="hero-card">
-					<div class="hero-card__content">
-						<span class="section-eyebrow">Modo agora</span>
+        <section class="side-panel actions-panel">
+          <h2>Ações Extras</h2>
 
-						<h2>Defina uma missão curta e execute com foco.</h2>
+          <div class="side-panel__content side-panel__content--actions">
+            <button class="button button--secondary" type="button">
+              Histórico
+            </button>
+          </div>
+        </section>
+      </aside>
 
-						<p>Organize o que precisa ser feito neste momento, escolha um tempo limite e acompanhe suas microtarefas durante a sessão.</p>
-					</div>
+      <section class="mission-panel">
+        <div class="timer-display">
+          <span>00:00</span>
+        </div>
 
-					<div class="hero-card__summary">
-						<span>Próxima sessão</span>
-						<strong>25 min</strong>
-						<small>Recomendado para foco leve</small>
-					</div>
-				</section>
+        <form class="mission-form">
+          <input
+            class="mission-input"
+            type="text"
+            placeholder="Nome da Missão"
+            aria-label="Nome da missão"
+          />
 
-				<section class="workspace-grid">
-					<article class="panel panel--form">
-						<div class="panel__header">
-							<div>
-								<span class="section-eyebrow">Nova missão</span>
-								<h2>Criar sessão</h2>
-							</div>
+          <input
+            class="mission-input"
+            type="number"
+            min="1"
+            placeholder="Tempo da Missão"
+            aria-label="Tempo da missão em minutos"
+          />
 
-							<span class="panel__badge">v0.1</span>
-						</div>
+          <section class="task-box" aria-label="Lista de tarefas da missão">
+            <ul class="task-list">
+              <li class="task-item">
+                <label class="task-check">
+                  <input type="checkbox" />
+                  <span></span>
+                </label>
 
-						<form class="mission-form">
-							<div class="form-group">
-								<label for="mission-title">Nome da missão</label>
-								<input id="mission-title" type="text" placeholder="Ex: Revisar matemática" />
-							</div>
+                <input
+                  class="task-name"
+                  type="text"
+                  placeholder="Nome Tarefa"
+                  aria-label="Nome da tarefa"
+                />
 
-							<div class="form-row">
-								<div class="form-group">
-									<label for="mission-time">Tempo</label>
-									<select id="mission-time">
-										<option value="10">10 minutos</option>
-										<option value="15">15 minutos</option>
-										<option value="25" selected>25 minutos</option>
-										<option value="30">30 minutos</option>
-										<option value="45">45 minutos</option>
-										<option value="60">60 minutos</option>
-									</select>
-								</div>
+                <button class="task-remove" type="button" aria-label="Remover tarefa">
+                  x
+                </button>
+              </li>
 
-								<div class="form-group">
-									<label for="mission-category">Categoria</label>
-									<select id="mission-category">
-										<option value="estudo">Estudo</option>
-										<option value="pessoal">Pessoal</option>
-										<option value="casa">Casa</option>
-										<option value="trabalho">Trabalho</option>
-									</select>
-								</div>
-							</div>
+              <li class="task-item">
+                <label class="task-check">
+                  <input type="checkbox" />
+                  <span></span>
+                </label>
 
-							<div class="form-group">
-								<label for="task-input">Microtarefas</label>
+                <input
+                  class="task-name"
+                  type="text"
+                  placeholder="Nome Tarefa"
+                  aria-label="Nome da tarefa"
+                />
 
-								<div class="task-input-row">
-									<input id="task-input" type="text" placeholder="Ex: Ler o resumo" />
+                <button class="task-remove" type="button" aria-label="Remover tarefa">
+                  x
+                </button>
+              </li>
 
-									<button class="button button--secondary" type="button">Adicionar</button>
-								</div>
+              <li class="task-item">
+                <label class="task-check">
+                  <input type="checkbox" />
+                  <span></span>
+                </label>
 
-								<small class="form-hint"> Recomendação: use de 3 a 7 microtarefas curtas. </small>
-							</div>
+                <input
+                  class="task-name"
+                  type="text"
+                  placeholder="Nome Tarefa"
+                  aria-label="Nome da tarefa"
+                />
 
-							<ul class="task-preview-list" aria-label="Prévia das microtarefas">
-								<li>
-									<span>01</span>
-									Ler o resumo principal
-								</li>
+                <button class="task-remove" type="button" aria-label="Remover tarefa">
+                  x
+                </button>
+              </li>
+            </ul>
+          </section>
 
-								<li>
-									<span>02</span>
-									Resolver 3 exercícios
-								</li>
+          <button class="button button--secondary add-task-button" type="button">
+            Adicionar Tarefa
+          </button>
 
-								<li>
-									<span>03</span>
-									Anotar dúvidas finais
-								</li>
-							</ul>
+          <button class="button button--primary start-button" type="button">
+            Começar Missão
+          </button>
+        </form>
+      </section>
 
-							<button class="button button--primary" type="button">Iniciar missão</button>
-						</form>
-					</article>
+      <div class="right-area" aria-hidden="true"></div>
+    </main>
+  </div>
 
-					<article class="panel panel--session">
-						<div class="panel__header">
-							<div>
-								<span class="section-eyebrow">Sessão atual</span>
-								<h2>Executando agora</h2>
-							</div>
-
-							<span class="status-pill">Em espera</span>
-						</div>
-
-						<div class="timer-card">
-							<span class="timer-card__label">Tempo restante</span>
-							<strong class="timer-card__time">25:00</strong>
-							<p>Prepare sua missão e clique em iniciar.</p>
-						</div>
-
-						<div class="current-mission">
-							<div class="current-mission__header">
-								<div>
-									<span>Missão</span>
-									<h3>Revisar matemática</h3>
-								</div>
-
-								<small>0/3 concluídas</small>
-							</div>
-
-							<ul class="checklist">
-								<li>
-									<label>
-										<input type="checkbox" />
-										<span>Ler o resumo principal</span>
-									</label>
-								</li>
-
-								<li>
-									<label>
-										<input type="checkbox" />
-										<span>Resolver 3 exercícios</span>
-									</label>
-								</li>
-
-								<li>
-									<label>
-										<input type="checkbox" />
-										<span>Anotar dúvidas finais</span>
-									</label>
-								</li>
-							</ul>
-
-							<div class="progress-box">
-								<div class="progress-box__info">
-									<span>Progresso</span>
-									<strong>0%</strong>
-								</div>
-
-								<div class="progress-bar">
-									<span style="width: 0%"></span>
-								</div>
-							</div>
-						</div>
-
-						<div class="session-actions">
-							<button class="button button--primary" type="button">Iniciar</button>
-
-							<button class="button button--secondary" type="button">Pausar</button>
-
-							<button class="button button--ghost" type="button">Finalizar</button>
-						</div>
-					</article>
-				</section>
-			</main>
-		</div>
-
-		<script src="./src/scripts/main.js"></script>
-	</body>
+  <script src="./src/scripts/main.js"></script>
+</body>
 </html>

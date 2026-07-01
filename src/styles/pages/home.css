@@ -1170,3 +1170,60 @@ body[data-history='open'] .history-panel {
 
 	color: var(--color-text-muted);
 }
+
+/* Estabilização da coluna lateral */
+
+.side-area {
+  height: 640px;
+
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0;
+}
+
+.orientation-panel {
+  grid-row: 1;
+}
+
+.actions-panel {
+  grid-row: 3;
+
+  height: 290px;
+  display: flex;
+  flex-direction: column;
+}
+
+.actions-panel .side-panel__content--actions {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+
+  gap: 12px;
+}
+
+.actions-panel .button {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.finished-actions,
+.danger-actions {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.finished-actions .button,
+.danger-actions .button {
+  width: 100%;
+  min-width: 0;
+}

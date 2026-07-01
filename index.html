@@ -1,87 +1,92 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Time-Task</title>
+		<title>Time-Task</title>
 
-    <link rel="stylesheet" href="./src/styles/main.css" />
-  </head>
-  <body data-screen="initial">
-    <div class="app">
-      <header class="app-title">
-        <h1>TIME-TASK</h1>
-      </header>
+		<link rel="stylesheet" href="./src/styles/main.css" />
+	</head>
+	<body data-screen="initial">
+		<div class="app">
+			<header class="app-title">
+				<h1>TIME-TASK</h1>
+			</header>
 
-      <main class="app-stage">
-        <aside class="side-area">
-          <section class="side-panel orientation-panel">
-            <h2>Orientações</h2>
+			<main class="app-stage">
+				<aside class="side-area">
+					<section class="side-panel orientation-panel">
+						<h2>Orientações</h2>
 
-            <div class="side-panel__content" id="orientation-message">
-              <p id="orientation-line-1">Defina sua missão, escolha o tempo</p>
-              <p id="orientation-line-2">e organize pequenas tarefas.</p>
-            </div>
-          </section>
+						<div class="side-panel__content" id="orientation-message">
+							<p id="orientation-line-1">Defina sua missão, escolha o tempo</p>
+							<p id="orientation-line-2">e organize pequenas tarefas.</p>
+						</div>
+					</section>
 
-          <section class="side-panel actions-panel">
-            <h2>Ações Extras</h2>
+					<section class="side-panel actions-panel">
+						<h2>Ações Extras</h2>
 
-            <div class="side-panel__content side-panel__content--actions">
-              <button id="history-button" class="button button--secondary" type="button">Histórico</button>
+						<div class="side-panel__content side-panel__content--actions">
+							<button id="history-button" class="button button--secondary" type="button">Histórico</button>
 
-              <button id="pause-toggle-button" class="button button--secondary running-only" type="button">Pausar/Retomar</button>
+							<button id="pause-toggle-button" class="button button--secondary running-only" type="button">Pausar/Retomar</button>
 
-              <div class="danger-actions running-only">
-                <button id="restart-mission-button" class="button button--danger" type="button">Reiniciar !</button>
+							<div class="danger-actions running-only">
+								<button id="restart-mission-button" class="button button--danger" type="button">Reiniciar !</button>
 
-                <button id="cancel-mission-button" class="button button--danger" type="button">Cancelar !</button>
-              </div>
+								<button id="cancel-mission-button" class="button button--danger" type="button">Cancelar !</button>
+							</div>
 
-              <button id="clear-current-mission-button" class="button button--secondary finished-only" type="button">Limpar Missão Atual</button>
+							<button id="clear-current-mission-button" class="button button--secondary finished-only" type="button">Limpar Missão Atual</button>
 
-              <div class="finished-actions finished-only">
-                <button id="repeat-mission-button" class="button button--secondary" type="button">Repetir Missão</button>
+							<div class="finished-actions finished-only">
+								<button id="repeat-mission-button" class="button button--secondary" type="button">Repetir Missão</button>
 
-                <button id="save-template-button" class="button button--secondary" type="button">Salvar Modelo</button>
-              </div>
-            </div>
-          </section>
-        </aside>
+								<button id="save-template-button" class="button button--secondary" type="button">Salvar Modelo</button>
+							</div>
+						</div>
+					</section>
+				</aside>
 
-        <section class="mission-panel">
-          <div class="timer-display">
-            <span>00:00</span>
-          </div>
+				<section class="mission-panel">
+					<div class="timer-display">
+						<span>00:00</span>
+					</div>
 
-          <form class="mission-form">
-            <input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" />
+					<form class="mission-form">
+						<input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" />
 
-            <input
-              id="mission-time"
-              class="mission-input"
-              type="text"
-              inputmode="numeric"
-              placeholder="Tempo em minutos"
-              aria-label="Tempo da missão em minutos"
-            />
+						<input id="mission-time" class="mission-input" type="text" inputmode="numeric" placeholder="Tempo em minutos" aria-label="Tempo da missão em minutos" />
 
-            <section class="task-box" aria-label="Lista de tarefas da missão">
-              <ul class="task-list" id="task-list"></ul>
-            </section>
-            <p id="task-progress" class="task-progress">0/0 Concluídas</p>
+						<section class="task-box" aria-label="Lista de tarefas da missão">
+							<ul class="task-list" id="task-list"></ul>
+						</section>
+						<p id="task-progress" class="task-progress">0/0 Concluídas</p>
 
-            <button id="add-task-button" class="button button--secondary add-task-button" type="button">Adicionar Tarefa</button>
+						<button id="add-task-button" class="button button--secondary add-task-button" type="button">Adicionar Tarefa</button>
 
-            <button id="start-mission-button" class="button button--primary start-button" type="button">Começar Missão</button>
-          </form>
-        </section>
+						<button id="start-mission-button" class="button button--primary start-button" type="button">Começar Missão</button>
+					</form>
+				</section>
 
-        <div class="right-area" aria-hidden="true"></div>
-      </main>
-    </div>
+				<aside class="right-area history-panel" id="history-panel" aria-label="Histórico de missões">
+					<div class="history-panel__header">
+						<h2>Histórico</h2>
 
-    <script src="./src/scripts/main.js"></script>
-  </body>
+						<button id="close-history-button" class="history-close-button" type="button" aria-label="Fechar histórico">X</button>
+					</div>
+
+					<div class="history-list" id="history-list">
+						<p class="history-empty">Nenhuma missão no histórico.</p>
+					</div>
+
+					<button id="clear-history-button" class="button button--danger history-clear-button" type="button">Apagar Histórico !</button>
+				</aside>
+			</main>
+		</div>
+
+		<script src="./src/scripts/main.js"></script>
+	</body>
 </html>

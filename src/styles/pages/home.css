@@ -490,3 +490,150 @@ margin-bottom: 12px;
   transform: none;
   filter: none;
 }
+
+/* Estados da tela */
+
+.running-only {
+  display: none !important;
+}
+
+body[data-screen="running"] .running-only,
+body[data-screen="paused"] .running-only {
+  display: block !important;
+  text-align: center;
+}
+
+body[data-screen="running"] .danger-actions.running-only,
+body[data-screen="paused"] .danger-actions.running-only {
+  display: grid !important;
+}
+
+body[data-screen="running"] .mission-panel,
+body[data-screen="paused"] .mission-panel {
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.28),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 32px rgba(60, 173, 156, 0.12);
+}
+
+body[data-screen="paused"] .timer-display {
+  filter: saturate(0.75);
+}
+
+body[data-screen="paused"] .timer-display span {
+  opacity: 0.72;
+}
+
+body[data-screen="finished"] .mission-panel {
+  filter: saturate(0.9);
+}
+
+/* Ações extras */
+
+.side-panel__content--actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.danger-actions {
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.button--danger {
+  min-width: 0;
+  min-height: 40px;
+  padding: 7px 14px;
+
+  background:
+    linear-gradient(180deg, #9f2e45, #7f2236);
+
+  color: #ffffff;
+}
+
+.button--danger:hover {
+  filter: brightness(1.08);
+}
+
+/* Campos travados durante a execução */
+
+.mission-input[readonly] {
+  cursor: default;
+  opacity: 0.92;
+}
+
+body[data-screen="running"] .mission-input,
+body[data-screen="paused"] .mission-input,
+body[data-screen="finished"] .mission-input {
+  background:
+    linear-gradient(180deg, #2b8276, #247167);
+}
+
+/* Progresso das tarefas */
+
+.task-progress {
+  display: none;
+  margin: -12px 0 12px;
+
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: var(--shadow-text-soft);
+}
+
+body[data-screen="running"] .task-progress,
+body[data-screen="paused"] .task-progress,
+body[data-screen="finished"] .task-progress {
+  display: block;
+}
+
+/* Estados do timer */
+
+.timer-display.is-warning span {
+  color: #ffe08a;
+}
+
+.timer-display.is-finished span {
+  color: #9ff2bd;
+}
+
+/* Estado finalizado das tarefas */
+
+.task-item.is-completed {
+  opacity: 0.62;
+}
+
+.task-item.is-completed .task-name {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.task-item.is-completed .task-remove {
+  opacity: 0.75;
+}
+
+/* Estado vazio */
+
+.task-empty {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Botões desativados */
+
+.button.is-disabled,
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  filter: none;
+}

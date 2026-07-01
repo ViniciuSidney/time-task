@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="./src/styles/main.css" />
   </head>
-  <body>
+  <body data-screen="initial">
     <div class="app">
       <header class="app-title">
         <h1>TIME-TASK</h1>
@@ -29,7 +29,15 @@
             <h2>Ações Extras</h2>
 
             <div class="side-panel__content side-panel__content--actions">
-              <button class="button button--secondary" type="button">Histórico</button>
+              <button id="history-button" class="button button--secondary" type="button">Histórico</button>
+
+              <button id="pause-toggle-button" class="button button--secondary running-only" type="button">Pausar/Retomar</button>
+
+              <div class="danger-actions running-only">
+                <button id="restart-mission-button" class="button button--danger" type="button">Reiniciar !</button>
+
+                <button id="cancel-mission-button" class="button button--danger" type="button">Cancelar !</button>
+              </div>
             </div>
           </section>
         </aside>
@@ -42,11 +50,19 @@
           <form class="mission-form">
             <input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" />
 
-            <input id="mission-time" class="mission-input" type="number" min="1" placeholder="Tempo em minutos" aria-label="Tempo da missão em minutos" />
+            <input
+              id="mission-time"
+              class="mission-input"
+              type="text"
+              inputmode="numeric"
+              placeholder="Tempo em minutos"
+              aria-label="Tempo da missão em minutos"
+            />
 
             <section class="task-box" aria-label="Lista de tarefas da missão">
               <ul class="task-list" id="task-list"></ul>
             </section>
+				<p id="task-progress" class="task-progress">0/0 Concluídas</p>
 
             <button id="add-task-button" class="button button--secondary add-task-button" type="button">Adicionar Tarefa</button>
 

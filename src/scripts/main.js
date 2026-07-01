@@ -19,10 +19,18 @@ const pauseToggleButton = document.querySelector("#pause-toggle-button");
 const restartMissionButton = document.querySelector("#restart-mission-button");
 const cancelMissionButton = document.querySelector("#cancel-mission-button");
 
+const clearCurrentMissionButton = document.querySelector("#clear-current-mission-button");
+const repeatMissionButton = document.querySelector("#repeat-mission-button");
+const saveTemplateButton = document.querySelector("#save-template-button");
+
 const orientationLine1 = document.querySelector("#orientation-line-1");
 const orientationLine2 = document.querySelector("#orientation-line-2");
 
 const MAX_TASKS = 7;
+const STORAGE_KEYS = {
+  history: "time-task:history",
+  templates: "time-task:templates",
+};
 
 let appState = "initial";
 let countdownInterval = null;
@@ -31,6 +39,7 @@ let pendingDangerAction = null;
 let pendingDangerTimeout = null;
 
 let activeMission = null;
+let lastFinishedMission = null;
 
 let tasks = [createTask(""), createTask(""), createTask("")];
 
@@ -352,7 +361,14 @@ function startMission() {
     return;
   }
 
-  activeMission = missionData;
+  activeMission = {
+    ...missionData,
+    id: createId(),
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
+    savedToHistory: false,
+  };
+
   tasks = activeMission.tasks;
 
   missionTitleInput.value = activeMission.title;
@@ -466,20 +482,36 @@ function cancelMission() {
   setOrientationMessage("Missão cancelada.", "Crie uma nova quando quiser.");
 }
 
-function finishMission() {
+function finishMission(reason = "manual") {
   if (!activeMission) {
     return;
   }
 
   stopCountdown();
 
+  activeMission.finishedAt = new Date().toISOString();
+  activeMission.finishReason = reason;
+  activeMission.completedTasks = tasks.filter((task) => task.completed).length;
+  activeMission.totalTasks = tasks.length;
+  activeMission.tasks = tasks;
+
+  saveMissionToHistory(activeMission);
+
+  lastFinishedMission = structuredClone(activeMission);
+
   timerDisplay.classList.remove("is-warning");
   timerDisplay.classList.add("is-finished");
 
   setAppState("finished");
+  renderTasks();
   updateTaskProgress();
 
-  setOrientationMessage("Missão concluída!", "A finalização completa vem na próxima etapa.");
+  if (reason === "time-ended") {
+    setOrientationMessage("Tempo encerrado!", "Missão adicionada ao histórico.");
+    return;
+  }
+
+  setOrientationMessage("Missão concluída!", "Missão adicionada ao histórico.");
 }
 
 function resetToNewMission() {
@@ -504,14 +536,7 @@ function resetToNewMission() {
 }
 
 function handleTimeFinished() {
-  stopCountdown();
-
-  timerDisplay.classList.remove("is-warning");
-  timerDisplay.classList.add("is-finished");
-
-  setAppState("finished");
-
-  setOrientationMessage("Tempo encerrado!", "Confira o que conseguiu concluir.");
+  finishMission("time-ended");
 }
 
 function updateTaskProgress() {
@@ -561,6 +586,152 @@ function escapeHTML(value) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
+function getStorageList(key) {
+  const rawData = localStorage.getItem(key);
+
+  if (!rawData) {
+    return [];
+  }
+
+  try {
+    const parsedData = JSON.parse(rawData);
+
+    if (Array.isArray(parsedData)) {
+      return parsedData;
+    }
+
+    return [];
+  } catch (error) {
+    console.error("Erro ao ler dados locais:", error);
+    return [];
+  }
+}
+
+function saveStorageList(key, list) {
+  localStorage.setItem(key, JSON.stringify(list));
+}
+
+function saveMissionToHistory(mission) {
+  if (mission.savedToHistory) {
+    return;
+  }
+
+  const history = getStorageList(STORAGE_KEYS.history);
+
+  const historyItem = {
+    id: mission.id,
+    title: mission.title,
+    durationMinutes: mission.durationMinutes,
+    remainingSeconds: mission.remainingSeconds,
+    totalSeconds: mission.totalSeconds,
+    completedTasks: mission.completedTasks,
+    totalTasks: mission.totalTasks,
+    tasks: mission.tasks.map((task) => ({
+      id: task.id,
+      name: task.name,
+      completed: task.completed,
+    })),
+    startedAt: mission.startedAt,
+    finishedAt: mission.finishedAt,
+    finishReason: mission.finishReason,
+  };
+
+  history.unshift(historyItem);
+
+  const limitedHistory = history.slice(0, 30);
+
+  saveStorageList(STORAGE_KEYS.history, limitedHistory);
+
+  mission.savedToHistory = true;
+}
+
+function saveCurrentMissionAsTemplate() {
+  if (!activeMission) {
+    setOrientationMessage("Nenhuma missão disponível.", "Finalize ou crie uma missão primeiro.");
+    return;
+  }
+
+  const templates = getStorageList(STORAGE_KEYS.templates);
+
+  const template = {
+    id: createId(),
+    title: activeMission.title,
+    durationMinutes: activeMission.durationMinutes,
+    tasks: activeMission.tasks.map((task) => ({
+      id: createId(),
+      name: task.name,
+      completed: false,
+    })),
+    createdAt: new Date().toISOString(),
+  };
+
+  templates.unshift(template);
+
+  const limitedTemplates = templates.slice(0, 20);
+
+  saveStorageList(STORAGE_KEYS.templates, limitedTemplates);
+
+  setOrientationMessage("Modelo salvo com sucesso.", "Você poderá reutilizá-lo depois.");
+}
+
+function repeatLastMission() {
+  if (!lastFinishedMission) {
+    setOrientationMessage("Nenhuma missão finalizada.", "Finalize uma missão antes de repetir.");
+    return;
+  }
+
+  stopCountdown();
+
+  activeMission = {
+    id: createId(),
+    title: lastFinishedMission.title,
+    durationMinutes: lastFinishedMission.durationMinutes,
+    totalSeconds: lastFinishedMission.totalSeconds,
+    remainingSeconds: lastFinishedMission.totalSeconds,
+    startedAt: new Date().toISOString(),
+    finishedAt: null,
+    finishReason: null,
+    savedToHistory: false,
+    tasks: lastFinishedMission.tasks.map((task) => ({
+      id: createId(),
+      name: task.name,
+      completed: false,
+    })),
+  };
+
+  tasks = activeMission.tasks;
+
+  missionTitleInput.value = activeMission.title;
+  missionTimeInput.value = `${activeMission.durationMinutes} minutos`;
+
+  missionTitleInput.readOnly = true;
+  missionTimeInput.readOnly = true;
+
+  timerDisplay.classList.remove("is-warning", "is-finished");
+
+  setAppState("running");
+  renderTasks();
+  updateTimerDisplay(activeMission.remainingSeconds);
+  startCountdown();
+
+  setOrientationMessage("Missão repetida.", "Execute novamente com foco.");
+}
+
+function showHistorySummary() {
+  const history = getStorageList(STORAGE_KEYS.history);
+
+  if (history.length === 0) {
+    setOrientationMessage("Histórico vazio.", "Finalize uma missão para registrar.");
+    return;
+  }
+
+  const lastItem = history[0];
+
+  setOrientationMessage(`${history.length} missão(ões) no histórico.`, `Última: ${lastItem.title}`);
+
+  console.table(history);
+}
+
 missionForm.addEventListener("submit", (event) => {
   event.preventDefault();
 });
@@ -574,7 +745,7 @@ startMissionButton.addEventListener("click", () => {
   }
 
   if (appState === "running" || appState === "paused") {
-    finishMission();
+    finishMission("manual");
     return;
   }
 
@@ -593,9 +764,13 @@ cancelMissionButton.addEventListener("click", () => {
   requestDangerConfirmation("cancel", cancelMission);
 });
 
-historyButton.addEventListener("click", () => {
-  setOrientationMessage("Histórico ainda não disponível.", "Essa tela será criada depois.");
-});
+clearCurrentMissionButton.addEventListener("click", resetToNewMission);
+
+repeatMissionButton.addEventListener("click", repeatLastMission);
+
+saveTemplateButton.addEventListener("click", saveCurrentMissionAsTemplate);
+
+historyButton.addEventListener("click", showHistorySummary);
 
 missionTimeInput.addEventListener("input", updateTimerPreview);
 

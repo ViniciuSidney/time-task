@@ -31,6 +31,21 @@ const clearHistoryButton = document.querySelector('#clear-history-button');
 const orientationLine1 = document.querySelector('#orientation-line-1');
 const orientationLine2 = document.querySelector('#orientation-line-2');
 
+const templatesButton = document.querySelector('#templates-button');
+
+const modalBackdrop = document.querySelector('#modal-backdrop');
+
+const confirmModal = document.querySelector('#confirm-modal');
+const confirmModalTitle = document.querySelector('#confirm-modal-title');
+const confirmModalMessage = document.querySelector('#confirm-modal-message');
+const confirmModalClose = document.querySelector('#confirm-modal-close');
+const confirmModalCancel = document.querySelector('#confirm-modal-cancel');
+const confirmModalConfirm = document.querySelector('#confirm-modal-confirm');
+
+const templatesModal = document.querySelector('#templates-modal');
+const templatesModalClose = document.querySelector('#templates-modal-close');
+const templateListElement = document.querySelector('#template-list');
+
 const MAX_TASKS = 7;
 const STORAGE_KEYS = {
 	history: 'time-task:history',
@@ -40,8 +55,7 @@ const STORAGE_KEYS = {
 let appState = 'initial';
 let countdownInterval = null;
 let countdownDeadline = null;
-let pendingDangerAction = null;
-let pendingDangerTimeout = null;
+let pendingConfirmAction = null;
 
 let activeMission = null;
 let lastFinishedMission = null;
@@ -111,6 +125,43 @@ function parseMissionMinutes(value) {
 	return Number(onlyNumbers);
 }
 
+function formatMinuteLabel(minutes) {
+	const safeMinutes = Number(minutes);
+
+	if (!safeMinutes || safeMinutes <= 0) {
+		return '';
+	}
+
+	if (safeMinutes === 1) {
+		return '1 minuto';
+	}
+
+	return `${safeMinutes} minutos`;
+}
+
+function normalizeMissionTimeInput() {
+	const minutes = parseMissionMinutes(missionTimeInput.value);
+
+	if (!minutes || minutes <= 0) {
+		missionTimeInput.value = '';
+		updateTimerPreview();
+		return;
+	}
+
+	missionTimeInput.value = formatMinuteLabel(minutes);
+	updateTimerPreview();
+}
+
+function prepareMissionTimeEditing() {
+	if (appState !== 'initial') {
+		return;
+	}
+
+	const minutes = parseMissionMinutes(missionTimeInput.value);
+
+	missionTimeInput.value = minutes ? String(minutes) : '';
+}
+
 function formatTime(totalSeconds) {
 	const safeSeconds = Math.max(0, totalSeconds);
 
@@ -118,6 +169,31 @@ function formatTime(totalSeconds) {
 	const seconds = safeSeconds % 60;
 
 	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function calculateElapsedSeconds(mission) {
+	if (!mission) {
+		return 0;
+	}
+
+	return Math.max(0, mission.totalSeconds - mission.remainingSeconds);
+}
+
+function formatDurationLabel(totalSeconds) {
+	const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
+
+	const minutes = Math.floor(safeSeconds / 60);
+	const seconds = safeSeconds % 60;
+
+	if (minutes === 0) {
+		return `${seconds}s`;
+	}
+
+	if (seconds === 0) {
+		return `${minutes} min`;
+	}
+
+	return `${minutes} min ${String(seconds).padStart(2, '0')}s`;
 }
 
 function updateTimerPreview() {
@@ -499,6 +575,7 @@ function finishMission(reason = 'manual') {
 	activeMission.completedTasks = tasks.filter((task) => task.completed).length;
 	activeMission.totalTasks = tasks.length;
 	activeMission.tasks = tasks;
+	activeMission.elapsedSeconds = calculateElapsedSeconds(activeMission);
 
 	saveMissionToHistory(activeMission);
 
@@ -562,33 +639,51 @@ function focusFirstEmptyTask() {
 }
 
 function requestDangerConfirmation(actionName, callback) {
-	if (pendingDangerAction !== actionName) {
-		pendingDangerAction = actionName;
-
-		clearTimeout(pendingDangerTimeout);
-
-		pendingDangerTimeout = setTimeout(() => {
-			pendingDangerAction = null;
-		}, 3500);
-
-		if (actionName === 'restart') {
-			setOrientationMessage('Clique em Reiniciar novamente', 'para confirmar a ação.');
+	const messages = {
+		restart: {
+			title: 'Reiniciar missão',
+			message: 'Tem certeza que deseja reiniciar a missão atual? O tempo voltará ao início e as tarefas serão desmarcadas.',
+			confirmLabel: 'Reiniciar'
+		},
+		cancel: {
+			title: 'Cancelar missão',
+			message: 'Tem certeza que deseja cancelar a missão atual? O progresso desta execução será perdido.',
+			confirmLabel: 'Cancelar'
+		},
+		'clear-history': {
+			title: 'Apagar histórico',
+			message: 'Tem certeza que deseja apagar todo o histórico? Essa ação não poderá ser desfeita.',
+			confirmLabel: 'Apagar'
+		},
+		'delete-history-item': {
+			title: 'Excluir registro',
+			message: 'Tem certeza que deseja excluir esta missão do histórico?',
+			confirmLabel: 'Excluir'
+		},
+		'clear-current': {
+			title: 'Limpar missão atual',
+			message: 'Tem certeza que deseja limpar a missão atual e voltar para a tela inicial?',
+			confirmLabel: 'Limpar'
+		},
+		'delete-template': {
+			title: 'Excluir modelo',
+			message: 'Tem certeza que deseja excluir este modelo salvo?',
+			confirmLabel: 'Excluir'
 		}
+	};
 
-		if (actionName === 'cancel') {
-			setOrientationMessage('Clique em Cancelar novamente', 'para abandonar a missão.');
-		}
+	const config = messages[actionName] ?? {
+		title: 'Confirmar ação',
+		message: 'Tem certeza que deseja continuar?',
+		confirmLabel: 'Confirmar'
+	};
 
-		if (actionName === 'clear-history') {
-			setOrientationMessage('Clique em Apagar Histórico novamente', 'para remover todos os registros.');
-		}
-
-		return;
-	}
-
-	pendingDangerAction = null;
-	clearTimeout(pendingDangerTimeout);
-	callback();
+	openConfirmModal({
+		title: config.title,
+		message: config.message,
+		confirmLabel: config.confirmLabel,
+		onConfirm: callback
+	});
 }
 
 function escapeHTML(value) {
@@ -633,6 +728,7 @@ function saveMissionToHistory(mission) {
 		durationMinutes: mission.durationMinutes,
 		remainingSeconds: mission.remainingSeconds,
 		totalSeconds: mission.totalSeconds,
+		elapsedSeconds: mission.elapsedSeconds,
 		completedTasks: mission.completedTasks,
 		totalTasks: mission.totalTasks,
 		tasks: mission.tasks.map((task) => ({
@@ -683,6 +779,8 @@ function saveCurrentMissionAsTemplate() {
 	saveStorageList(STORAGE_KEYS.templates, limitedTemplates);
 
 	setOrientationMessage('Modelo salvo com sucesso.', 'Você poderá reutilizá-lo depois.');
+
+	openTemplatesModal();
 }
 
 function repeatLastMission() {
@@ -764,6 +862,8 @@ function renderHistoryPanel() {
 
 		const formattedDate = formatHistoryDate(mission.finishedAt);
 		const formattedTime = formatHistoryTime(mission.finishedAt);
+		const elapsedSeconds = mission.elapsedSeconds ?? calculateHistoryElapsedSeconds(mission);
+		const usedTimeLabel = formatDurationLabel(elapsedSeconds);
 
 		historyCard.innerHTML = `
       <div class="history-card__top">
@@ -778,8 +878,9 @@ function renderHistoryPanel() {
       </div>
 
       <div class="history-card__meta">
-        <span>${mission.completedTasks}/${mission.totalTasks} tarefas concluídas</span>
-        <span>${mission.durationMinutes} minutos planejados</span>
+         <span>${mission.completedTasks}/${mission.totalTasks} tarefas concluídas</span>
+         <span>${mission.durationMinutes} minutos planejados</span>
+         <span>${usedTimeLabel} usados</span>
       </div>
 
       <div class="history-card__actions">
@@ -806,6 +907,22 @@ function renderHistoryPanel() {
 
 		historyListElement.appendChild(historyCard);
 	});
+}
+
+function calculateHistoryElapsedSeconds(mission) {
+	if (!mission) {
+		return 0;
+	}
+
+	if (typeof mission.elapsedSeconds === 'number') {
+		return mission.elapsedSeconds;
+	}
+
+	if (typeof mission.totalSeconds === 'number' && typeof mission.remainingSeconds === 'number') {
+		return Math.max(0, mission.totalSeconds - mission.remainingSeconds);
+	}
+
+	return 0;
 }
 
 function formatHistoryDate(isoDate) {
@@ -884,13 +1001,15 @@ function repeatMissionFromHistory(historyId) {
 }
 
 function deleteHistoryItem(historyId) {
-	const history = getStorageList(STORAGE_KEYS.history);
-	const updatedHistory = history.filter((mission) => mission.id !== historyId);
+	requestDangerConfirmation('delete-history-item', () => {
+		const history = getStorageList(STORAGE_KEYS.history);
+		const updatedHistory = history.filter((mission) => mission.id !== historyId);
 
-	saveStorageList(STORAGE_KEYS.history, updatedHistory);
-	renderHistoryPanel();
+		saveStorageList(STORAGE_KEYS.history, updatedHistory);
+		renderHistoryPanel();
 
-	setOrientationMessage('Item removido do histórico.', 'O restante foi mantido.');
+		setOrientationMessage('Item removido do histórico.', 'O restante foi mantido.');
+	});
 }
 
 function clearHistory() {
@@ -912,6 +1031,148 @@ function refreshHistoryIfOpen() {
 	}
 
 	renderHistoryPanel();
+}
+
+function openModal(modalElement) {
+	modalBackdrop.hidden = false;
+
+	confirmModal.hidden = true;
+	templatesModal.hidden = true;
+
+	modalElement.hidden = false;
+}
+
+function closeModals() {
+	modalBackdrop.hidden = true;
+	confirmModal.hidden = true;
+	templatesModal.hidden = true;
+	pendingConfirmAction = null;
+}
+
+function openConfirmModal({title, message, confirmLabel = 'Confirmar', onConfirm}) {
+	pendingConfirmAction = onConfirm;
+
+	confirmModalTitle.textContent = title;
+	confirmModalMessage.textContent = message;
+	confirmModalConfirm.textContent = confirmLabel;
+
+	openModal(confirmModal);
+}
+
+function openTemplatesModal() {
+	renderTemplatesModal();
+	openModal(templatesModal);
+
+	setOrientationMessage('Modelos abertos.', 'Escolha uma missão salva para reutilizar.');
+}
+
+function renderTemplatesModal() {
+	const templates = getStorageList(STORAGE_KEYS.templates);
+
+	templateListElement.innerHTML = '';
+
+	if (templates.length === 0) {
+		templateListElement.innerHTML = `
+      <p class="modal-empty">Nenhum modelo salvo ainda.</p>
+    `;
+		return;
+	}
+
+	templates.forEach((template) => {
+		const templateCard = document.createElement('article');
+		templateCard.className = 'template-card';
+		templateCard.dataset.templateId = template.id;
+
+		const formattedDate = template.createdAt ? new Date(template.createdAt).toLocaleDateString('pt-BR') : '--/--/----';
+
+		templateCard.innerHTML = `
+      <div class="template-card__top">
+        <h3 class="template-card__title">${escapeHTML(template.title)}</h3>
+        <span>${formattedDate}</span>
+      </div>
+
+      <div class="template-card__meta">
+        <span>${template.durationMinutes} minutos planejados</span>
+        <span>${template.tasks.length} tarefa(s)</span>
+      </div>
+
+      <div class="template-card__actions">
+        <button class="button button--secondary template-use-button" type="button">
+          Usar Modelo
+        </button>
+
+        <button class="button button--danger template-delete-button" type="button">
+          X
+        </button>
+      </div>
+    `;
+
+		const useButton = templateCard.querySelector('.template-use-button');
+		const deleteButton = templateCard.querySelector('.template-delete-button');
+
+		useButton.addEventListener('click', () => {
+			useTemplate(template.id);
+		});
+
+		deleteButton.addEventListener('click', () => {
+			deleteTemplate(template.id);
+		});
+
+		templateListElement.appendChild(templateCard);
+	});
+}
+
+function useTemplate(templateId) {
+	if (appState === 'running' || appState === 'paused') {
+		setOrientationMessage('Finalize ou cancele a missão atual', 'antes de usar um modelo.');
+		return;
+	}
+
+	const templates = getStorageList(STORAGE_KEYS.templates);
+	const selectedTemplate = templates.find((template) => template.id === templateId);
+
+	if (!selectedTemplate) {
+		setOrientationMessage('Modelo não encontrado.', 'A lista será atualizada.');
+		renderTemplatesModal();
+		return;
+	}
+
+	stopCountdown();
+
+	activeMission = null;
+
+	tasks = selectedTemplate.tasks.map((task) => ({
+		id: createId(),
+		name: task.name,
+		completed: false
+	}));
+
+	missionTitleInput.value = selectedTemplate.title;
+	missionTimeInput.value = formatMinuteLabel(selectedTemplate.durationMinutes);
+
+	missionTitleInput.readOnly = false;
+	missionTimeInput.readOnly = false;
+
+	timerDisplay.classList.remove('is-warning', 'is-finished');
+	timerDisplayText.textContent = formatTime(selectedTemplate.durationMinutes * 60);
+
+	setAppState('initial');
+	renderTasks();
+	closeModals();
+
+	setOrientationMessage('Modelo carregado.', 'Revise e comece a missão.');
+}
+
+function deleteTemplate(templateId) {
+	requestDangerConfirmation('delete-template', () => {
+		const templates = getStorageList(STORAGE_KEYS.templates);
+		const updatedTemplates = templates.filter((template) => template.id !== templateId);
+
+		saveStorageList(STORAGE_KEYS.templates, updatedTemplates);
+		renderTemplatesModal();
+
+		setOrientationMessage('Modelo excluído.', 'Os outros modelos foram mantidos.');
+	});
 }
 
 // Event Listeners
@@ -948,7 +1209,9 @@ cancelMissionButton.addEventListener('click', () => {
 	requestDangerConfirmation('cancel', cancelMission);
 });
 
-clearCurrentMissionButton.addEventListener('click', resetToNewMission);
+clearCurrentMissionButton.addEventListener('click', () => {
+	requestDangerConfirmation('clear-current', resetToNewMission);
+});
 
 repeatMissionButton.addEventListener('click', repeatLastMission);
 
@@ -962,6 +1225,32 @@ closeHistoryButton.addEventListener('click', () => {
 
 clearHistoryButton.addEventListener('click', clearHistory);
 
+templatesButton.addEventListener('click', openTemplatesModal);
+
+templatesModalClose.addEventListener('click', closeModals);
+confirmModalClose.addEventListener('click', closeModals);
+confirmModalCancel.addEventListener('click', closeModals);
+
+confirmModalConfirm.addEventListener('click', () => {
+	if (typeof pendingConfirmAction === 'function') {
+		pendingConfirmAction();
+	}
+
+	closeModals();
+});
+
+modalBackdrop.addEventListener('click', (event) => {
+	if (event.target === modalBackdrop) {
+		closeModals();
+	}
+});
+
+document.addEventListener('keydown', (event) => {
+	if (event.key === 'Escape' && !modalBackdrop.hidden) {
+		closeModals();
+	}
+});
+
 missionTimeInput.addEventListener('input', updateTimerPreview);
 
 missionTitleInput.addEventListener('focus', () => {
@@ -972,11 +1261,14 @@ missionTitleInput.addEventListener('focus', () => {
 	setOrientationMessage('Nomeie sua missão.', 'Seja direto e específico.');
 });
 
+missionTimeInput.addEventListener('blur', normalizeMissionTimeInput);
+
 missionTimeInput.addEventListener('focus', () => {
 	if (appState !== 'initial') {
 		return;
 	}
 
+	prepareMissionTimeEditing();
 	setOrientationMessage('Escolha um tempo limite.', 'Comece com blocos pequenos.');
 });
 

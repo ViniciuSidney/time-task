@@ -1,28 +1,80 @@
-# Time Task
+# Time-Task
 
-Aplicação web simples de timer com microtarefas para organizar sessões de foco imediato.
+Aplicação web simples de **timer com microtarefas** para organizar sessões de foco imediato.
+
+O Time-Task ajuda o usuário a transformar uma intenção ampla em uma pequena missão com tempo definido, tarefas claras e acompanhamento visual do progresso.
+
+---
 
 ## Objetivo
 
-O objetivo do projeto é ajudar o usuário a executar uma tarefa no momento presente, combinando um tempo definido com uma pequena lista de ações curtas.
+O objetivo do projeto é ajudar o usuário a executar uma tarefa no momento presente, combinando:
 
-A aplicação funciona como uma sessão de foco: o usuário define uma missão, escolhe um tempo limite, adiciona microtarefas e acompanha seu progresso até finalizar a sessão.
+- Um timer regressivo;
+- Uma missão principal;
+- Uma lista curta de microtarefas;
+- Um histórico de sessões finalizadas;
+- Modelos reutilizáveis.
+
+A aplicação funciona como uma sessão de foco: o usuário define uma missão, escolhe um tempo limite, adiciona microtarefas e acompanha seu progresso até finalizar a execução.
+
+---
 
 ## Funcionalidades
 
+### Missões
+
 - Criar uma missão de foco com título e tempo definido.
-- Adicionar microtarefas curtas para cumprir durante o timer.
-- Iniciar, pausar, continuar e finalizar uma sessão.
-- Marcar microtarefas como concluídas durante a execução.
-- Visualizar o progresso da sessão atual.
-- Salvar informações localmente no navegador.
-- Utilizar a aplicação em dispositivos móveis e computadores.
+- Limitar o tempo máximo da missão.
+- Exibir tempo em minutos ou horas.
+- Iniciar, pausar, retomar, reiniciar, cancelar e finalizar uma missão.
+- Finalizar automaticamente quando o timer chega a zero.
+- Visualizar mensagens de orientação durante o uso.
+
+### Microtarefas
+
+- Adicionar microtarefas curtas.
+- Remover microtarefas.
+- Marcar microtarefas como concluídas.
+- Desmarcar microtarefas.
+- Visualizar progresso com base nas tarefas concluídas.
+
+### Histórico
+
+- Salvar missões finalizadas localmente.
+- Visualizar histórico em painel lateral.
+- Ver data, hora, tempo planejado, tempo usado e progresso.
+- Repetir missão a partir do histórico.
+- Excluir item individual do histórico.
+- Apagar histórico com confirmação.
+
+### Modelos
+
+- Salvar missão como modelo.
+- Abrir modal com modelos salvos.
+- Usar modelo salvo para preencher uma nova missão.
+- Excluir modelo com confirmação.
+
+### Segurança de ações
+
+- Modal de confirmação para ações perigosas:
+  - Reiniciar missão;
+  - Cancelar missão;
+  - Limpar missão atual;
+  - Excluir item do histórico;
+  - Apagar histórico;
+  - Excluir modelo.
+
+---
 
 ## Tecnologias utilizadas
 
 - HTML
 - CSS
 - JavaScript
+- LocalStorage
+
+---
 
 ## Estrutura do projeto
 
@@ -47,6 +99,9 @@ A aplicação funciona como uma sessão de foco: o usuário define uma missão, 
       fonts/
       icons/
       images/
+      layouts/
+        prototipos/
+        finais/
 
     scripts/
       core/
@@ -77,22 +132,54 @@ A aplicação funciona como uma sessão de foco: o usuário define uma missão, 
   README.md
 ```
 
+---
+
 ## Status do projeto
 
 Em desenvolvimento.
 
-Versão atual planejada: `v0.1` — núcleo inicial da aplicação.
+Versão atual: `v0.1` — núcleo funcional da missão.
+
+A aplicação já possui o fluxo principal funcionando em desktop, incluindo criação de missão, timer, microtarefas, histórico, modelos e modais de confirmação.
+
+Ainda estão pendentes:
+
+- Responsividade completa para mobile;
+- Recuperação da missão ativa após recarregar a página;
+- Testes manuais completos;
+- Melhorias de acessibilidade;
+- Refatoração futura do JavaScript em módulos.
+
+---
 
 ## Próximos passos
 
-- Finalizar a documentação inicial do projeto.
-- Criar a estrutura visual da tela principal.
-- Implementar o formulário de criação da missão.
-- Implementar o timer regressivo.
-- Implementar a lista de microtarefas com marcação de conclusão.
-- Salvar a sessão atual no armazenamento local do navegador.
-- Refinar a responsividade para dispositivos móveis.
-- Preparar a primeira versão funcional da aplicação.
+- Finalizar testes manuais da v0.1.
+- Corrigir bugs encontrados durante os testes.
+- Refinar responsividade para dispositivos móveis.
+- Implementar recuperação de missão ativa após recarregar a página.
+- Melhorar acessibilidade dos modais e controles.
+- Revisar textos de orientação.
+- Organizar futuramente o JavaScript em módulos.
+- Preparar fechamento da versão v0.1.
+
+---
+
+## Documentação
+
+A documentação do projeto fica na pasta `docs/`.
+
+Principais documentos:
+
+- `01-visao-do-projeto.md`: visão geral da aplicação.
+- `02-requisitos-e-escopo.md`: requisitos e limites do projeto.
+- `03-fluxos-e-telas.md`: telas, estados e fluxos principais.
+- `04-dados-e-arquitetura.md`: dados, armazenamento e arquitetura.
+- `05-roadmap.md`: planejamento de versões.
+- `06-testes.md`: testes manuais.
+- `07-changelog.md`: histórico de mudanças.
+
+---
 
 ## Autor
 

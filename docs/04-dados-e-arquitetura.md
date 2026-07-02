@@ -1,106 +1,268 @@
 # Dados e Arquitetura
 
+## Visão geral técnica
+
+O Time-Task é uma aplicação web feita inicialmente com:
+
+- HTML;
+- CSS;
+- JavaScript puro;
+- `localStorage` para persistência local.
+
+A versão atual ainda concentra a lógica principal em `src/scripts/main.js`. Essa escolha é aceitável durante o desenvolvimento inicial, pois facilita testar rapidamente o fluxo principal. Porém, conforme o projeto crescer, a tendência é separar o código em módulos menores.
+
+A arquitetura deve priorizar:
+
+- Simplicidade;
+- Clareza;
+- Baixo acoplamento;
+- Fácil manutenção;
+- Evolução gradual.
+
+---
+
 ## Dados principais
 
-### Entidade: Sessão
+### Entidade: Missão ativa
 
-Representa uma missão de foco criada pelo usuário para ser executada dentro de um tempo definido.
+Representa a missão que está sendo executada ou acabou de ser criada pelo usuário.
 
-Campos:
-- id: identificador único da sessão.
-- title: título da missão.
+Campos atuais usados na aplicação:
+
+- id: identificador único da missão.
+- title: nome da missão.
 - durationMinutes: duração planejada em minutos.
-- status: estado atual da sessão (`draft`, `running`, `paused`, `finished` ou `cancelled`).
-- createdAt: data e hora de criação da sessão.
-- startedAt: data e hora em que o timer foi iniciado.
-- pausedAt: data e hora em que a sessão foi pausada.
-- finishedAt: data e hora em que a sessão foi finalizada.
-- endAt: data e hora prevista para o encerramento da sessão.
-- totalPausedMs: tempo total em milissegundos em que a sessão ficou pausada.
-- completedTasks: quantidade de microtarefas concluídas.
-- totalTasks: quantidade total de microtarefas da sessão.
+- totalSeconds: duração total convertida para segundos.
+- remainingSeconds: tempo restante em segundos.
+- startedAt: data e hora de início da missão.
+- finishedAt: data e hora de finalização.
+- finishReason: motivo da finalização (`manual` ou `time-ended`).
+- savedToHistory: indica se a missão já foi salva no histórico.
+- completedTasks: quantidade de tarefas concluídas.
+- totalTasks: quantidade total de tarefas.
+- elapsedSeconds: tempo realmente usado.
+- tasks: lista de microtarefas da missão.
+
+Observação:
+A missão ativa atualmente existe em memória durante o uso da página. A recuperação automática após recarregar a página ainda é uma melhoria pendente.
 
 ---
 
 ### Entidade: Microtarefa
 
-Representa uma ação curta que deve ser cumprida durante a sessão.
+Representa uma ação curta dentro de uma missão.
 
-Campos:
+Campos atuais:
+
 - id: identificador único da microtarefa.
-- sessionId: identificador da sessão à qual a microtarefa pertence.
-- title: descrição curta da microtarefa.
-- isDone: indica se a microtarefa foi concluída.
-- order: posição da microtarefa na lista.
-- createdAt: data e hora de criação da microtarefa.
-- completedAt: data e hora de conclusão da microtarefa.
+- name: nome/descrição da microtarefa.
+- completed: indica se a microtarefa foi concluída.
+
+Exemplo:
+
+```json
+{
+  "id": "task-123",
+  "name": "Resolver 3 questões",
+  "completed": false
+}
+```
 
 ---
 
-### Entidade: Configurações
+### Entidade: Item de histórico
 
-Representa preferências simples do usuário na aplicação.
+Representa uma missão finalizada e salva no navegador.
 
-Campos:
-- theme: tema visual selecionado (`light` ou `dark`).
-- soundEnabled: indica se os sons da aplicação estão ativados.
-- vibrationEnabled: indica se a vibração em dispositivos móveis está ativada.
-- lastSessionId: identificador da última sessão acessada.
+Campos atuais:
+
+- id: identificador da missão.
+- title: nome da missão.
+- durationMinutes: duração planejada em minutos.
+- totalSeconds: duração total em segundos.
+- remainingSeconds: tempo restante ao finalizar.
+- elapsedSeconds: tempo realmente usado.
+- completedTasks: quantidade de tarefas concluídas.
+- totalTasks: quantidade total de tarefas.
+- tasks: lista de microtarefas com seus estados finais.
+- startedAt: data e hora de início.
+- finishedAt: data e hora de finalização.
+- finishReason: motivo da finalização.
+
+Exemplo lógico:
+
+```json
+{
+  "id": "mission-123",
+  "title": "Revisar Matemática",
+  "durationMinutes": 30,
+  "totalSeconds": 1800,
+  "remainingSeconds": 240,
+  "elapsedSeconds": 1560,
+  "completedTasks": 2,
+  "totalTasks": 3,
+  "finishReason": "manual"
+}
+```
 
 ---
 
-### Entidade futura: Modelo de sessão
+### Entidade: Modelo de missão
 
-Representa uma sessão reaproveitável, pensada para versões futuras.
+Representa uma missão reutilizável salva pelo usuário.
 
-Campos:
+Campos atuais:
+
 - id: identificador único do modelo.
 - title: título do modelo.
-- durationMinutes: duração padrão.
+- durationMinutes: duração padrão em minutos.
 - tasks: lista de microtarefas padrão.
 - createdAt: data e hora de criação do modelo.
+
+Exemplo lógico:
+
+```json
+{
+  "id": "template-123",
+  "title": "Revisão rápida",
+  "durationMinutes": 25,
+  "tasks": [
+    {
+      "id": "task-1",
+      "name": "Ler resumo",
+      "completed": false
+    }
+  ],
+  "createdAt": "2026-07-01T12:00:00.000Z"
+}
+```
+
+---
+
+### Entidade futura: Configurações
+
+Representará preferências simples do usuário.
+
+Campos possíveis:
+
+- theme: tema visual selecionado (`light` ou `dark`).
+- soundEnabled: indica se sons estão ativados.
+- vibrationEnabled: indica se vibração está ativada.
+- maxMissionMinutes: limite de tempo preferido pelo usuário.
+- lastSessionId: identificador da última sessão acessada.
+
+Essa entidade ainda não é prioridade na v0.1.
 
 ---
 
 ## Relações entre dados
 
-- Uma Sessão possui várias Microtarefas.
-- Uma Microtarefa pertence a uma Sessão.
-- As Configurações pertencem ao usuário local do navegador.
-- Futuramente, um Modelo de sessão poderá gerar uma nova Sessão.
-- Futuramente, um Modelo de sessão poderá possuir várias Microtarefas padrão.
+- Uma missão possui várias microtarefas.
+- Uma microtarefa pertence ao contexto de uma missão.
+- Um item de histórico representa uma missão finalizada.
+- Um modelo de missão pode gerar uma nova missão.
+- Um modelo possui várias microtarefas padrão.
+- O histórico e os modelos pertencem ao usuário local do navegador.
 
 ---
 
 ## Armazenamento local
 
-Na versão inicial, os dados serão salvos no navegador usando `localStorage`.
+Na versão atual, os dados persistidos são salvos no navegador usando `localStorage`.
 
-Chaves sugeridas:
-- `timeTask.currentSession`: armazena a sessão em andamento.
-- `timeTask.sessions`: armazena o histórico de sessões.
-- `timeTask.settings`: armazena as preferências do usuário.
-- `timeTask.templates`: armazena modelos de sessão em versões futuras.
+Chaves atuais usadas:
 
-Observação:
-- A aplicação não terá login, banco de dados externo ou sincronização em nuvem na versão inicial.
-- O armazenamento local é suficiente para validar a utilidade do projeto e manter o escopo simples.
+- `time-task:history`: armazena o histórico de missões finalizadas.
+- `time-task:templates`: armazena modelos de missão salvos.
+
+Formato esperado:
+
+```js
+localStorage["time-task:history"] = JSON.stringify([...]);
+localStorage["time-task:templates"] = JSON.stringify([...]);
+```
+
+### Chaves futuras possíveis
+
+- `time-task:current-mission`: missão ativa para recuperação após recarregar a página.
+- `time-task:settings`: preferências do usuário.
+- `time-task:version`: versão interna do formato dos dados.
+
+---
+
+## Regras de armazenamento
+
+- O histórico deve manter apenas uma quantidade limitada de registros.
+- Atualmente, a aplicação limita o histórico aos registros mais recentes.
+- Os modelos também devem ter limite para evitar acúmulo desnecessário.
+- A exclusão de histórico, item de histórico e modelo deve exigir confirmação.
+- Dados locais não são sincronizados entre dispositivos.
+- Ao limpar dados do navegador, os registros serão perdidos.
+
+---
+
+## Regras de tempo
+
+### Limite máximo
+
+A missão deve respeitar um limite máximo de duração.
+
+Valor atual sugerido:
+
+```js
+MAX_MISSION_MINUTES = 120;
+```
+
+Isso equivale a 2 horas.
+
+Motivo:
+O Time-Task é focado em execução imediata. Sessões longas demais fogem da proposta da aplicação.
+
+### Formatação de tempo
+
+A aplicação deve aceitar entrada em minutos, mas exibir valores maiores que 59 minutos em horas.
+
+Exemplos:
+
+- `30` → `30 minutos`
+- `60` → `1 hora`
+- `90` → `1 hora e 30 minutos`
+- `120` → `2 horas`
+
+### Timer
+
+O timer deve exibir:
+
+- `MM:SS` para tempos abaixo de 1 hora;
+- `HH:MM:SS` para tempos iguais ou superiores a 1 hora.
+
+Exemplos:
+
+- `25 minutos` → `25:00`
+- `1 hora` → `01:00:00`
+- `2 horas` → `02:00:00`
 
 ---
 
 ## Regra técnica importante do timer
 
-O timer deve ser calculado com base em datas reais, não apenas em intervalos visuais.
+O timer deve ser calculado com base em datas reais, não apenas em decrementos visuais.
 
-Em vez de depender somente de `setInterval`, a aplicação deve calcular o tempo restante comparando o horário final da sessão com o horário atual.
+Em vez de depender somente de subtrair 1 segundo a cada intervalo, a aplicação calcula um prazo final e compara com o horário atual.
 
 Exemplo lógico:
 
 ```js
-tempoRestante = horarioFinal - Date.now();
+countdownDeadline = Date.now() + remainingSeconds * 1000;
+remainingSeconds = Math.ceil((countdownDeadline - Date.now()) / 1000);
 ```
 
-Isso evita problemas quando a aba fica em segundo plano, o navegador reduz a execução do JavaScript ou o usuário bloqueia a tela do dispositivo.
+Isso reduz problemas quando:
+
+- A aba fica em segundo plano;
+- O navegador reduz a frequência do JavaScript;
+- O computador fica lento;
+- O usuário alterna entre janelas.
 
 ---
 
@@ -127,6 +289,9 @@ Isso evita problemas quando a aba fica em segundo plano, o navegador reduz a exe
       fonts/
       icons/
       images/
+      layouts/
+        prototipos/
+        finais/
 
     scripts/
       core/
@@ -159,139 +324,197 @@ Isso evita problemas quando a aba fica em segundo plano, o navegador reduz a exe
 
 ---
 
-## Organização dos scripts
-
-Sugestão de responsabilidade dos arquivos e pastas:
+## Organização atual dos scripts
 
 ### `src/scripts/main.js`
 
-Arquivo de entrada da aplicação.
+Arquivo que atualmente concentra a lógica principal da aplicação.
 
-Responsabilidades:
-- Carregar a aplicação quando a página estiver pronta.
-- Inicializar eventos principais.
-- Chamar a função principal do app.
+Responsabilidades atuais:
 
-### `src/scripts/app.js`
+- Selecionar elementos do DOM;
+- Controlar estado da aplicação;
+- Criar, editar e remover microtarefas;
+- Validar missão;
+- Iniciar, pausar, retomar, reiniciar e finalizar timer;
+- Salvar histórico;
+- Renderizar painel de histórico;
+- Salvar e carregar modelos;
+- Controlar modais;
+- Exibir mensagens de orientação.
 
-Arquivo central de controle.
-
-Responsabilidades:
-- Coordenar os módulos principais.
-- Inicializar estado da aplicação.
-- Integrar timer, microtarefas, armazenamento e interface.
-
-### `src/scripts/core/`
-
-Pasta para regras centrais da aplicação.
-
-Possíveis arquivos:
-- `timer.js`: lógica do timer.
-- `storage.js`: leitura e gravação no `localStorage`.
-- `state.js`: controle do estado atual da sessão.
-- `validation.js`: validações de formulário.
-
-### `src/scripts/features/`
-
-Pasta para funcionalidades principais.
-
-Possíveis arquivos:
-- `mission.js`: criação e controle da missão.
-- `tasks.js`: criação, edição e conclusão das microtarefas.
-- `session.js`: início, pausa, continuação e finalização da sessão.
-- `history.js`: histórico de sessões em versões futuras.
-
-### `src/scripts/shared/`
-
-Pasta para recursos reutilizáveis.
-
-Possíveis arquivos:
-- `helpers.js`: funções auxiliares.
-- `constants.js`: constantes do projeto.
-- `formatters.js`: formatação de tempo, data e textos.
+Essa concentração é aceitável no protótipo funcional, mas deve ser revista futuramente.
 
 ---
 
-## Organização dos estilos
+## Organização futura dos scripts
 
-### `src/styles/main.css`
+Sugestão para refatoração futura:
 
-Arquivo principal de estilos.
+### `src/scripts/main.js`
+
+Arquivo de entrada.
 
 Responsabilidades:
-- Importar os demais arquivos CSS.
-- Centralizar a entrada visual da aplicação.
+- Inicializar a aplicação.
+- Importar módulos principais.
+- Chamar função de inicialização.
+
+### `src/scripts/app.js`
+
+Coordenação geral.
+
+Responsabilidades:
+- Inicializar estado.
+- Conectar eventos.
+- Integrar módulos.
+
+### `src/scripts/core/timer.js`
+
+Responsabilidades:
+- Criar timer;
+- Pausar;
+- Retomar;
+- Reiniciar;
+- Calcular tempo restante;
+- Formatar tempo.
+
+### `src/scripts/core/storage.js`
+
+Responsabilidades:
+- Ler `localStorage`;
+- Salvar `localStorage`;
+- Validar dados;
+- Controlar chaves.
+
+### `src/scripts/core/formatters.js`
+
+Responsabilidades:
+- Formatar minutos;
+- Formatar duração;
+- Formatar data e hora.
+
+### `src/scripts/core/validation.js`
+
+Responsabilidades:
+- Validar título;
+- Validar tempo;
+- Validar tarefas;
+- Validar limites.
+
+### `src/scripts/features/tasks.js`
+
+Responsabilidades:
+- Criar tarefa;
+- Remover tarefa;
+- Atualizar tarefa;
+- Marcar como concluída;
+- Renderizar lista.
+
+### `src/scripts/features/history.js`
+
+Responsabilidades:
+- Salvar histórico;
+- Renderizar painel;
+- Excluir item;
+- Apagar histórico;
+- Repetir missão.
+
+### `src/scripts/features/templates.js`
+
+Responsabilidades:
+- Salvar modelo;
+- Listar modelos;
+- Usar modelo;
+- Excluir modelo.
+
+### `src/scripts/features/modals.js`
+
+Responsabilidades:
+- Abrir modal;
+- Fechar modal;
+- Controlar confirmação.
+
+---
+
+## Organização atual dos estilos
+
+### `src/styles/pages/home.css`
+
+Atualmente concentra os estilos principais da tela inicial e seus estados.
+
+Responsabilidades atuais:
+
+- Variáveis visuais da página;
+- Layout desktop;
+- Painéis laterais;
+- Painel da missão;
+- Tarefas;
+- Botões;
+- Estados da aplicação;
+- Histórico;
+- Modais;
+- Modelos;
+- Correções específicas.
+
+O arquivo foi refatorado em seções comentadas para facilitar manutenção.
+
+---
+
+## Organização futura dos estilos
+
+Com o crescimento do projeto, os estilos poderão ser separados em:
 
 ### `src/styles/base/`
 
-Pasta para estilos básicos.
-
-Exemplos:
-- reset.
-- variáveis globais.
-- tipografia.
-- estilos base do documento.
+- Reset;
+- Variáveis;
+- Tipografia;
+- Estilos globais.
 
 ### `src/styles/components/`
 
-Pasta para componentes reutilizáveis.
-
-Exemplos:
-- botões.
-- cards.
-- inputs.
-- checkboxes.
-- modais.
+- Botões;
+- Inputs;
+- Tarefas;
+- Modais;
+- Cards de histórico;
+- Cards de modelo.
 
 ### `src/styles/layout/`
 
-Pasta para estrutura geral da interface.
-
-Exemplos:
-- cabeçalho.
-- container principal.
-- grid.
-- seções.
+- Estrutura principal;
+- Grid da página;
+- Painéis laterais;
+- Painel central.
 
 ### `src/styles/pages/`
 
-Pasta para estilos específicos de telas.
-
-Exemplo:
-- `home.css`: estilos da tela principal.
-
-### `src/styles/themes/`
-
-Pasta para temas visuais.
-
-Exemplos:
-- `light.css`: tema claro.
-- `dark.css`: tema escuro.
+- Ajustes específicos da tela principal.
 
 ### `src/styles/utilities/`
 
-Pasta para classes e ajustes auxiliares.
-
-Exemplos:
-- responsividade.
-- espaçamentos.
-- estados visuais.
-- classes utilitárias.
+- Classes utilitárias;
+- Responsividade;
+- Estados auxiliares.
 
 ---
 
 ## Fluxo geral da aplicação
 
 1. Usuário acessa o Time-Task.
-2. A aplicação carrega configurações e sessão em andamento, se existir.
+2. Aplicação carrega estado inicial.
 3. Usuário cria uma missão com título, tempo e microtarefas.
-4. Sistema valida as informações.
-5. Usuário inicia a sessão.
-6. Timer começa a contar regressivamente.
+4. Sistema valida os dados.
+5. Usuário inicia a missão.
+6. Timer começa a contagem regressiva.
 7. Usuário marca microtarefas como concluídas.
-8. Sistema atualiza progresso e salva o estado localmente.
-9. Usuário finaliza a sessão ou o tempo chega ao fim.
-10. Sistema exibe o resultado e salva o registro da sessão.
+8. Sistema atualiza progresso.
+9. Usuário pode pausar, retomar, reiniciar, cancelar ou finalizar.
+10. Ao finalizar, sistema calcula resultado.
+11. Missão é salva no histórico local.
+12. Usuário pode repetir missão ou salvar modelo.
+13. Modelos e histórico ficam disponíveis para reutilização.
 
 ---
 
@@ -302,13 +525,20 @@ Exemplos:
 - Sem banco de dados externo.
 - Sem sincronização entre dispositivos.
 - Sem dependência obrigatória de bibliotecas externas.
-- Sem sistema complexo de calendário.
-- Sem notificações avançadas na primeira versão.
+- Sem calendário.
+- Sem notificações avançadas.
+- Sem dashboard complexo.
+- JavaScript ainda não modularizado completamente.
+- Persistência da missão ativa após recarregamento ainda pendente.
 
 ---
 
 ## Observações
 
-A arquitetura deve priorizar simplicidade, clareza e manutenção fácil.
+A arquitetura do Time-Task deve respeitar a proposta do produto:
 
-Como o Time-Task é uma aplicação de foco imediato, a estrutura técnica precisa ajudar a manter a experiência rápida: abrir, configurar, iniciar e executar.
+> **Abrir, definir, executar e finalizar.**
+
+Toda decisão técnica deve evitar transformar a aplicação em um sistema pesado demais.
+
+A evolução deve ocorrer por pequenas versões, sempre mantendo a experiência simples e rápida.

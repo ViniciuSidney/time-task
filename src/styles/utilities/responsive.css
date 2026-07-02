@@ -154,6 +154,20 @@
     letter-spacing: 0.05em;
   }
 
+  .app-title__info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .app-title__info p {
+    font-size: 0.95rem;
+  }
+
+  .about-button {
+    width: 30px;
+    height: 30px;
+  }
+
   .app-stage {
     width: 100%;
     gap: 16px;
@@ -330,6 +344,10 @@
     padding: 14px;
   }
 
+  .about-modal__body {
+	max-height: calc(100dvh - 150px);
+}
+
   .app-modal,
   .app-modal--large {
     width: 100%;
@@ -360,6 +378,11 @@
 
   .app-title h1 {
     font-size: 2.2rem;
+  }
+
+  .app-title__info p {
+    max-width: 260px;
+    font-size: 0.9rem;
   }
 
   .side-panel,
@@ -423,31 +446,36 @@
   .template-card__actions {
     grid-template-columns: 1fr 40px;
   }
+
+  .about-modal__body {
+	max-height: calc(100dvh - 130px);
+	padding-right: 10px;
+}
 }
 
 /* Trava o scroll da página quando há overlay real aberto */
 
 body.is-overlay-open {
-	overflow: hidden;
+  overflow: hidden;
 }
 
 body.is-overlay-open .app {
-	overscroll-behavior: none;
+  overscroll-behavior: none;
 }
 
 .modal-backdrop {
-	overflow-y: auto;
+  overflow-y: auto;
 }
 
 .app-modal {
-	max-height: calc(100dvh - 48px);
-	overflow: hidden;
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
 }
 
 .app-modal__body {
-	overflow-y: auto;
+  overflow-y: auto;
 }
 
 .app-modal--large .app-modal__body {
-	max-height: min(420px, calc(100dvh - 190px));
+  max-height: min(420px, calc(100dvh - 190px));
 }

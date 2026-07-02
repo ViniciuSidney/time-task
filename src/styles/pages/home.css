@@ -171,6 +171,65 @@ input {
 	text-shadow: var(--shadow-text-strong);
 }
 
+/* Informações do título */
+
+.app-title__info {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+}
+
+.app-title__info p {
+	margin: 0;
+
+	color: var(--color-text);
+	font-size: 1rem;
+	font-weight: 500;
+	line-height: 1.2;
+	text-shadow: var(--shadow-text-soft);
+}
+
+.about-button {
+	width: 28px;
+	height: 28px;
+	padding: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	background: rgba(7, 43, 37, 0.28);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	border-radius: 999px;
+	color: var(--color-text);
+
+	font-size: 1rem;
+	font-weight: 800;
+	line-height: 1;
+	text-shadow: var(--shadow-text-soft);
+
+	transition:
+		transform 0.16s ease,
+		filter 0.16s ease,
+		background 0.16s ease;
+}
+
+.about-button:hover {
+	background: rgba(7, 43, 37, 0.42);
+	filter: brightness(1.1);
+	transform: translateY(-1px);
+}
+
+.about-button:active {
+	transform: translateY(0);
+}
+
+.about-button:focus-visible {
+	outline: 3px solid rgba(255, 255, 255, 0.24);
+	outline-offset: 3px;
+}
+
 .app-stage {
 	display: grid;
 	grid-template-columns: var(--side-column-width) var(--main-panel-width) var(--side-column-width);
@@ -1126,6 +1185,78 @@ body[data-history='open'] .history-panel {
 	place-items: center;
 
 	color: var(--color-text-muted);
+}
+
+/* Modal Sobre */
+
+.about-modal__body {
+	display: grid;
+	gap: 16px;
+}
+
+.about-modal__body > p {
+	text-align: center;
+}
+
+.about-info-list {
+	display: grid;
+	gap: 10px;
+}
+
+.about-info-item {
+	padding: 12px;
+
+	background: linear-gradient(180deg, #319184, #287b70);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: var(--radius-xs);
+	box-shadow: var(--shadow-card);
+}
+
+.about-info-item h3 {
+	margin: 0 0 5px;
+
+	font-size: 1rem;
+	font-weight: 800;
+	line-height: 1.1;
+	text-align: center;
+	text-shadow: var(--shadow-text-soft);
+}
+
+.about-info-item p {
+	margin: 0;
+
+	color: var(--color-text-soft);
+	font-size: 0.95rem;
+	font-weight: 700;
+	line-height: 1.35;
+	text-align: center;
+}
+
+/* Scroll interno do modal Sobre */
+
+.about-modal__body {
+	max-height: min(460px, calc(100dvh - 180px));
+	overflow-y: auto;
+	padding-right: 14px;
+}
+
+.about-modal__body::-webkit-scrollbar {
+	width: 8px;
+}
+
+.about-modal__body::-webkit-scrollbar-track {
+	background: rgba(7, 43, 37, 0.72);
+	border-radius: 999px;
+}
+
+.about-modal__body::-webkit-scrollbar-thumb {
+	background: linear-gradient(180deg, var(--color-primary-light), #a8f5bd);
+	border: 2px solid rgba(7, 43, 37, 0.92);
+	border-radius: 999px;
+}
+
+.about-modal__body::-webkit-scrollbar-thumb:hover {
+	background: #a8f5bd;
 }
 
 /* =========================================================

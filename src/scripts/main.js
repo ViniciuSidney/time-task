@@ -68,6 +68,10 @@ const dom = {
   templatesModal: document.querySelector("#templates-modal"),
   templatesModalClose: document.querySelector("#templates-modal-close"),
   templateList: document.querySelector("#template-list"),
+
+  aboutButton: document.querySelector("#about-button"),
+  aboutModal: document.querySelector("#about-modal"),
+  aboutModalClose: document.querySelector("#about-modal-close"),
 };
 
 /* =========================================================
@@ -1473,10 +1477,17 @@ function openModal(modalElement) {
 
   dom.confirmModal.hidden = true;
   dom.templatesModal.hidden = true;
+  dom.aboutModal.hidden = true;
 
   modalElement.hidden = false;
 
   updateOverlayScrollLock();
+}
+
+function openAboutModal() {
+  openModal(dom.aboutModal);
+
+  setOrientationMessage("Sobre o Time-Task.", "Veja informações da aplicação.");
 }
 
 function closeModals({ skipCancel = false } = {}) {
@@ -1485,6 +1496,7 @@ function closeModals({ skipCancel = false } = {}) {
   dom.modalBackdrop.hidden = true;
   dom.confirmModal.hidden = true;
   dom.templatesModal.hidden = true;
+  dom.aboutModal.hidden = true;
 
   state.pendingConfirmAction = null;
   state.pendingCancelAction = null;
@@ -1726,6 +1738,9 @@ function bindEvents() {
   dom.clearHistoryButton.addEventListener("click", clearHistory);
 
   dom.templatesButton.addEventListener("click", openTemplatesModal);
+
+  dom.aboutButton.addEventListener("click", openAboutModal);
+  dom.aboutModalClose.addEventListener("click", closeModals);
 
   dom.templatesModalClose.addEventListener("click", closeModals);
   dom.confirmModalClose.addEventListener("click", closeModals);

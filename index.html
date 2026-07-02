@@ -15,6 +15,12 @@
     <div class="app">
       <header class="app-title">
         <h1>TIME-TASK</h1>
+
+        <div class="app-title__info">
+          <p>Organize sua produtividade com eficiência</p>
+
+          <button id="about-button" class="about-button" type="button" aria-label="Abrir informações sobre o Time-Task" title="Sobre o Time-Task">?</button>
+        </div>
       </header>
 
       <main class="app-stage">
@@ -129,6 +135,40 @@
         <div class="app-modal__body">
           <div class="template-list" id="template-list">
             <p class="modal-empty">Nenhum modelo salvo ainda.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-modal app-modal--large" id="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-modal-title" hidden>
+        <header class="app-modal__header">
+          <h2 id="about-modal-title">Sobre o Time-Task</h2>
+
+          <button class="modal-close-button" id="about-modal-close" type="button" aria-label="Fechar modal sobre">X</button>
+        </header>
+
+        <div class="app-modal__body about-modal__body">
+          <p>O <strong>Time-Task</strong> é uma aplicação web de foco imediato que combina um timer com uma lista curta de microtarefas.</p>
+
+          <div class="about-info-list">
+            <article class="about-info-item">
+              <h3>Versão</h3>
+              <p>v0.1 — Núcleo de Missão</p>
+            </article>
+
+            <article class="about-info-item">
+              <h3>Criador</h3>
+              <p>Vinícius Sidney</p>
+            </article>
+
+            <article class="about-info-item">
+              <h3>Objetivo</h3>
+              <p>Ajudar o usuário a transformar uma tarefa ampla em uma missão clara, com tempo definido e pequenas ações executáveis.</p>
+            </article>
+
+            <article class="about-info-item">
+              <h3>Dados</h3>
+              <p>As missões, histórico e modelos são salvos localmente no navegador, sem login e sem banco de dados externo nesta versão.</p>
+            </article>
           </div>
         </div>
       </section>

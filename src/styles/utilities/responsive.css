@@ -1,0 +1,437 @@
+/* =========================================================
+   Time-Task - Responsividade
+   Arquivo dedicado para ajustes de layout em telas menores.
+
+   Breakpoints:
+   - Até 1320px: desktop compacto
+   - Até 1180px: tablet / notebooks menores
+   - Até 760px: mobile
+   - Até 420px: mobile estreito
+========================================================= */
+
+/* =========================================================
+   01. Desktop compacto
+========================================================= */
+
+@media (max-width: 1320px) {
+  body {
+    min-width: 0;
+  }
+
+  .app {
+    padding-inline: 24px;
+  }
+
+  .app-stage {
+    grid-template-columns: 320px 420px 320px;
+    gap: 24px;
+  }
+
+  .side-column,
+  .side-area,
+  .right-area {
+    width: 100%;
+  }
+
+  .side-panel {
+    width: 100%;
+  }
+
+  .history-panel {
+    width: 320px;
+  }
+
+  .history-clear-button {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   02. Tablet / notebook menor
+========================================================= */
+
+@media (max-width: 1180px) {
+  body {
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .app {
+    padding: 32px 20px;
+  }
+
+  .app-title {
+    width: min(420px, 100%);
+    margin-bottom: 24px;
+  }
+
+  .app-stage {
+    width: min(860px, 100%);
+    margin-inline: auto;
+
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .side-area {
+    width: 100%;
+    height: auto;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .side-panel {
+    width: 100%;
+  }
+
+  .orientation-panel,
+  .actions-panel {
+    grid-row: auto;
+  }
+
+  .orientation-panel {
+    height: auto;
+    min-height: 150px;
+  }
+
+  .actions-panel {
+    height: auto;
+    min-height: 220px;
+  }
+
+  .actions-panel .side-panel__content--actions {
+    justify-content: center;
+  }
+
+  .mission-panel {
+    width: min(420px, 100%);
+    min-height: 640px;
+    margin-inline: auto;
+  }
+
+  .right-area {
+    width: 100%;
+    min-height: 0;
+  }
+
+  .history-panel {
+    width: min(640px, 100%);
+    min-height: auto;
+    margin-inline: auto;
+  }
+
+  .history-list {
+    height: min(420px, 55vh);
+  }
+
+  body[data-history="closed"] .history-panel {
+    display: none;
+  }
+
+  body[data-history="open"] .history-panel {
+    display: block;
+  }
+}
+
+/* =========================================================
+   03. Mobile
+========================================================= */
+
+@media (max-width: 760px) {
+  .app {
+    padding: 20px 14px 28px;
+  }
+
+  .app-title {
+    padding: 12px 16px;
+    margin-bottom: 18px;
+  }
+
+  .app-title h1 {
+    font-size: clamp(2.2rem, 12vw, 3.2rem);
+    letter-spacing: 0.05em;
+  }
+
+  .app-stage {
+    width: 100%;
+    gap: 16px;
+  }
+
+  .side-area {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .orientation-panel {
+    min-height: 128px;
+  }
+
+  .orientation-panel .side-panel__content {
+    padding: 12px 14px;
+  }
+
+  .orientation-panel .side-panel__content p {
+    font-size: 1rem;
+  }
+
+  .actions-panel {
+    min-height: auto;
+  }
+
+  .actions-panel .side-panel__content--actions {
+    gap: 10px;
+  }
+
+  .mission-panel {
+    width: 100%;
+    min-height: auto;
+    padding: 16px 16px 18px;
+  }
+
+  .timer-display {
+    height: 92px;
+    margin-bottom: 20px;
+  }
+
+  .timer-display span {
+    font-size: clamp(3.1rem, 16vw, 4.3rem);
+    margin-bottom: 8px;
+  }
+
+  .timer-display.has-hours span {
+    font-size: clamp(2.35rem, 11vw, 3.35rem);
+    letter-spacing: 0.02em;
+  }
+
+  .mission-input {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .task-box {
+    width: 100%;
+    height: 240px;
+    margin: 12px 0 18px;
+  }
+
+  .task-item {
+    grid-template-columns: 32px minmax(0, 1fr) 28px;
+  }
+
+  .button--primary {
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+  }
+
+  .button--secondary {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .add-task-button {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .danger-actions,
+  .finished-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .danger-actions .button,
+  .finished-actions .button {
+    white-space: normal;
+  }
+
+  /* Histórico vira painel sobreposto no mobile */
+
+  .right-area {
+    position: static;
+    min-height: 0;
+  }
+
+  .history-panel {
+    position: fixed;
+    inset: 12px;
+    z-index: 80;
+
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    max-height: calc(100dvh - 24px);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 9px 12px 14px;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    pointer-events: none;
+
+    overflow: hidden;
+  }
+
+  body[data-history="closed"] .history-panel {
+    display: flex;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px);
+    pointer-events: none;
+  }
+
+  body[data-history="open"] .history-panel {
+    display: flex;
+
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .history-panel__header {
+    flex: 0 0 auto;
+  }
+
+  .history-list {
+    flex: 1 1 auto;
+
+    height: auto;
+    min-height: 0;
+    max-height: none;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .history-clear-button {
+    flex: 0 0 auto;
+
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .history-card__top {
+    grid-template-columns: 1fr;
+  }
+
+  .history-card__date {
+    text-align: left;
+  }
+
+  /* Modais */
+
+  .modal-backdrop {
+    padding: 14px;
+  }
+
+  .app-modal,
+  .app-modal--large {
+    width: 100%;
+  }
+
+  .app-modal__footer {
+    grid-template-columns: 1fr;
+  }
+
+  .template-card__top {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .template-card__actions {
+    grid-template-columns: 1fr 44px;
+  }
+}
+
+/* =========================================================
+   04. Mobile estreito
+========================================================= */
+
+@media (max-width: 420px) {
+  .app {
+    padding-inline: 10px;
+  }
+
+  .app-title h1 {
+    font-size: 2.2rem;
+  }
+
+  .side-panel,
+  .mission-panel,
+  .history-panel,
+  .app-modal {
+    border-radius: 8px;
+  }
+
+  .side-panel h2 {
+    font-size: 1.18rem;
+  }
+
+  .side-panel__content p {
+    font-size: 0.98rem;
+  }
+
+  .mission-panel {
+    padding: 14px 12px 16px;
+  }
+
+  .timer-display {
+    height: 84px;
+  }
+
+  .timer-display span {
+    font-size: 3rem;
+  }
+
+  .timer-display.has-hours span {
+    font-size: 2.25rem;
+  }
+
+  .task-box {
+    height: 230px;
+    padding: 7px;
+    border-width: 5px;
+  }
+
+  .task-name {
+    font-size: 0.95rem;
+  }
+
+  .button {
+    font-size: 1rem;
+  }
+
+  .button--primary {
+    font-size: 1.25rem;
+  }
+
+  .history-panel {
+    inset: 8px;
+    max-height: calc(100dvh - 16px);
+  }
+
+  .history-card__actions {
+    grid-template-columns: 1fr 40px;
+  }
+
+  .template-card__actions {
+    grid-template-columns: 1fr 40px;
+  }
+}
+
+/* Trava o scroll da página quando há painel/modal aberto */
+
+body.is-overlay-open {
+	overflow: hidden;
+	touch-action: none;
+}
+
+body.is-overlay-open .app {
+	overscroll-behavior: none;
+}

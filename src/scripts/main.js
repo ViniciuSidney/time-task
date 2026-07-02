@@ -382,6 +382,13 @@ function setAppState(newState) {
   updateAddTaskButtonState();
 }
 
+function updateOverlayScrollLock() {
+  const isHistoryOpen = dom.body.dataset.history === "open";
+  const isModalOpen = !dom.modalBackdrop.hidden;
+
+  dom.body.classList.toggle("is-overlay-open", isHistoryOpen || isModalOpen);
+}
+
 function updateActionLabels() {
   const labelsByState = {
     [APP_STATES.initial]: {
@@ -1195,6 +1202,8 @@ function saveMissionToHistory(mission) {
 function setHistoryOpen(isOpen) {
   dom.body.dataset.history = isOpen ? "open" : "closed";
 
+  updateOverlayScrollLock();
+
   if (isOpen) {
     renderHistoryPanel();
     setOrientationMessage("Histórico aberto.", "Você pode repetir missões anteriores.");
@@ -1366,6 +1375,8 @@ function openModal(modalElement) {
   dom.templatesModal.hidden = true;
 
   modalElement.hidden = false;
+
+  updateOverlayScrollLock();
 }
 
 function closeModals() {
@@ -1373,6 +1384,8 @@ function closeModals() {
   dom.confirmModal.hidden = true;
   dom.templatesModal.hidden = true;
   state.pendingConfirmAction = null;
+
+  updateOverlayScrollLock();
 }
 
 function openConfirmModal({ title, message, confirmLabel = "Confirmar", onConfirm }) {
@@ -1673,6 +1686,7 @@ function initApp() {
   bindEvents();
 
   dom.body.dataset.history = "closed";
+  updateOverlayScrollLock();
 
   const restoredActiveMission = restoreActiveMissionSnapshot();
 

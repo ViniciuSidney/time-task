@@ -425,13 +425,29 @@
   }
 }
 
-/* Trava o scroll da página quando há painel/modal aberto */
+/* Trava o scroll da página quando há overlay real aberto */
 
 body.is-overlay-open {
 	overflow: hidden;
-	touch-action: none;
 }
 
 body.is-overlay-open .app {
 	overscroll-behavior: none;
+}
+
+.modal-backdrop {
+	overflow-y: auto;
+}
+
+.app-modal {
+	max-height: calc(100dvh - 48px);
+	overflow: hidden;
+}
+
+.app-modal__body {
+	overflow-y: auto;
+}
+
+.app-modal--large .app-modal__body {
+	max-height: min(420px, calc(100dvh - 190px));
 }

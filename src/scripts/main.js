@@ -385,8 +385,11 @@ function setAppState(newState) {
 function updateOverlayScrollLock() {
   const isHistoryOpen = dom.body.dataset.history === "open";
   const isModalOpen = !dom.modalBackdrop.hidden;
+  const isMobileOverlay = window.matchMedia("(max-width: 760px)").matches;
 
-  dom.body.classList.toggle("is-overlay-open", isHistoryOpen || isModalOpen);
+  const shouldLockScroll = isModalOpen || (isHistoryOpen && isMobileOverlay);
+
+  dom.body.classList.toggle("is-overlay-open", shouldLockScroll);
 }
 
 function updateActionLabels() {
@@ -1660,6 +1663,8 @@ function bindEvents() {
       saveCurrentScreenSnapshot();
     }
   });
+
+  window.addEventListener("resize", updateOverlayScrollLock);
 }
 
 function handleMainActionClick() {

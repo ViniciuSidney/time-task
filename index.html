@@ -60,7 +60,16 @@
 					<form class="mission-form">
 						<input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" autocomplete="off" />
 
-						<input id="mission-time" class="mission-input" type="text" inputmode="numeric" placeholder="Tempo em minutos" aria-label="Tempo da missão em minutos" autocomplete="off" />
+						<input
+							id="mission-time"
+							class="mission-input"
+							type="text"
+							inputmode="numeric"
+							maxlength="3"
+							placeholder="Tempo em minutos"
+							aria-label="Tempo da missão em minutos"
+							autocomplete="off"
+						/>
 						<section class="task-box" aria-label="Lista de tarefas da missão">
 							<ul class="task-list" id="task-list"></ul>
 						</section>

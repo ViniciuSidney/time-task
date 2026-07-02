@@ -47,6 +47,7 @@ const templatesModalClose = document.querySelector('#templates-modal-close');
 const templateListElement = document.querySelector('#template-list');
 
 const MAX_TASKS = 7;
+const MAX_MISSION_MINUTES = 120;
 const STORAGE_KEYS = {
 	history: 'time-task:history',
 	templates: 'time-task:templates'
@@ -121,8 +122,34 @@ function updateActionLabels() {
 }
 
 function parseMissionMinutes(value) {
-	const onlyNumbers = String(value).replace(/\D/g, '');
+	const text = String(value).toLowerCase().trim();
+
+	if (text === '') {
+		return 0;
+	}
+
+	const hourMatch = text.match(/(\d+)\s*(?:h|hora|horas)\b/);
+	const minuteMatch = text.match(/(\d+)\s*(?:m|min|minuto|minutos)\b/);
+
+	if (hourMatch || minuteMatch) {
+		const hours = hourMatch ? Number(hourMatch[1]) : 0;
+		const minutes = minuteMatch ? Number(minuteMatch[1]) : 0;
+
+		return hours * 60 + minutes;
+	}
+
+	const onlyNumbers = text.replace(/\D/g, '');
 	return Number(onlyNumbers);
+}
+
+function limitMissionMinutes(minutes) {
+	const safeMinutes = Number(minutes);
+
+	if (!safeMinutes || safeMinutes <= 0) {
+		return 0;
+	}
+
+	return Math.min(safeMinutes, MAX_MISSION_MINUTES);
 }
 
 function formatMinuteLabel(minutes) {
@@ -132,23 +159,51 @@ function formatMinuteLabel(minutes) {
 		return '';
 	}
 
-	if (safeMinutes === 1) {
-		return '1 minuto';
+	const hours = Math.floor(safeMinutes / 60);
+	const remainingMinutes = safeMinutes % 60;
+
+	if (hours === 0) {
+		return safeMinutes === 1 ? '1 minuto' : `${safeMinutes} minutos`;
 	}
 
-	return `${safeMinutes} minutos`;
+	if (remainingMinutes === 0) {
+		return hours === 1 ? '1 hora' : `${hours} horas`;
+	}
+
+	const hourLabel = hours === 1 ? '1 hora' : `${hours} horas`;
+	const minuteLabel = remainingMinutes === 1 ? '1 minuto' : `${remainingMinutes} minutos`;
+
+	return `${hourLabel} e ${minuteLabel}`;
+}
+
+function handleMissionTimeInput() {
+	const rawMinutes = parseMissionMinutes(missionTimeInput.value);
+
+	if (!rawMinutes || rawMinutes <= 0) {
+		updateTimerPreview();
+		return;
+	}
+
+	if (rawMinutes > MAX_MISSION_MINUTES) {
+		missionTimeInput.value = String(MAX_MISSION_MINUTES);
+
+		setOrientationMessage('Tempo máximo atingido.', `Use até ${formatMinuteLabel(MAX_MISSION_MINUTES)} por missão.`);
+	}
+
+	updateTimerPreview();
 }
 
 function normalizeMissionTimeInput() {
-	const minutes = parseMissionMinutes(missionTimeInput.value);
+	const rawMinutes = parseMissionMinutes(missionTimeInput.value);
+	const limitedMinutes = limitMissionMinutes(rawMinutes);
 
-	if (!minutes || minutes <= 0) {
+	if (!limitedMinutes) {
 		missionTimeInput.value = '';
 		updateTimerPreview();
 		return;
 	}
 
-	missionTimeInput.value = formatMinuteLabel(minutes);
+	missionTimeInput.value = formatMinuteLabel(limitedMinutes);
 	updateTimerPreview();
 }
 
@@ -158,15 +213,19 @@ function prepareMissionTimeEditing() {
 	}
 
 	const minutes = parseMissionMinutes(missionTimeInput.value);
-
-	missionTimeInput.value = minutes ? String(minutes) : '';
+	missionTimeInput.value = minutes ? String(limitMissionMinutes(minutes)) : '';
 }
 
 function formatTime(totalSeconds) {
-	const safeSeconds = Math.max(0, totalSeconds);
+	const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
 
-	const minutes = Math.floor(safeSeconds / 60);
+	const hours = Math.floor(safeSeconds / 3600);
+	const minutes = Math.floor((safeSeconds % 3600) / 60);
 	const seconds = safeSeconds % 60;
+
+	if (hours > 0) {
+		return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+	}
 
 	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
@@ -201,14 +260,14 @@ function updateTimerPreview() {
 		return;
 	}
 
-	const minutes = parseMissionMinutes(missionTimeInput.value);
+	const minutes = limitMissionMinutes(parseMissionMinutes(missionTimeInput.value));
 
 	if (!minutes || minutes <= 0) {
-		timerDisplayText.textContent = '00:00';
+		updateTimerDisplay(0);
 		return;
 	}
 
-	timerDisplayText.textContent = formatTime(minutes * 60);
+	updateTimerDisplay(minutes * 60);
 }
 
 function renderTasks(focusTaskId = null) {
@@ -405,7 +464,7 @@ function getFilledTasks() {
 
 function validateMissionCreation() {
 	const missionTitle = missionTitleInput.value.trim();
-	const missionMinutes = parseMissionMinutes(missionTimeInput.value);
+	const missionMinutes = limitMissionMinutes(parseMissionMinutes(missionTimeInput.value));
 	const filledTasks = getFilledTasks();
 
 	if (missionTitle === '') {
@@ -417,6 +476,16 @@ function validateMissionCreation() {
 	if (!missionMinutes || missionMinutes <= 0) {
 		setOrientationMessage('Defina um tempo válido.', 'Use minutos acima de zero.');
 		missionTimeInput.focus();
+		return null;
+	}
+
+	if (parseMissionMinutes(missionTimeInput.value) > MAX_MISSION_MINUTES) {
+		setOrientationMessage('Tempo acima do permitido.', `O máximo é ${formatMinuteLabel(MAX_MISSION_MINUTES)}.`);
+
+		missionTimeInput.value = formatMinuteLabel(MAX_MISSION_MINUTES);
+		updateTimerPreview();
+		missionTimeInput.focus();
+
 		return null;
 	}
 
@@ -453,7 +522,7 @@ function startMission() {
 	tasks = activeMission.tasks;
 
 	missionTitleInput.value = activeMission.title;
-	missionTimeInput.value = `${activeMission.durationMinutes} minutos`;
+	missionTimeInput.value = formatMinuteLabel(activeMission.durationMinutes);
 
 	missionTitleInput.readOnly = true;
 	missionTimeInput.readOnly = true;
@@ -498,6 +567,7 @@ function stopCountdown() {
 
 function updateTimerDisplay(seconds) {
 	timerDisplayText.textContent = formatTime(seconds);
+	timerDisplay.classList.toggle('has-hours', seconds >= 3600);
 }
 
 function togglePauseMission() {
@@ -811,7 +881,7 @@ function repeatLastMission() {
 	tasks = activeMission.tasks;
 
 	missionTitleInput.value = activeMission.title;
-	missionTimeInput.value = `${activeMission.durationMinutes} minutos`;
+	missionTimeInput.value = formatMinuteLabel(activeMission.durationMinutes);
 
 	missionTitleInput.readOnly = true;
 	missionTimeInput.readOnly = true;
@@ -879,7 +949,7 @@ function renderHistoryPanel() {
 
       <div class="history-card__meta">
          <span>${mission.completedTasks}/${mission.totalTasks} tarefas concluídas</span>
-         <span>${mission.durationMinutes} minutos planejados</span>
+         <span>${formatPlannedTimeLabel(mission.durationMinutes)}</span>
          <span>${usedTimeLabel} usados</span>
       </div>
 
@@ -907,6 +977,16 @@ function renderHistoryPanel() {
 
 		historyListElement.appendChild(historyCard);
 	});
+}
+
+function formatPlannedTimeLabel(minutes) {
+	const label = formatMinuteLabel(minutes);
+
+	if (!label) {
+		return 'Tempo não informado';
+	}
+
+	return `Planejado: ${label}`;
 }
 
 function calculateHistoryElapsedSeconds(mission) {
@@ -985,7 +1065,7 @@ function repeatMissionFromHistory(historyId) {
 	lastFinishedMission = structuredClone(activeMission);
 
 	missionTitleInput.value = activeMission.title;
-	missionTimeInput.value = `${activeMission.durationMinutes} minutos`;
+	missionTimeInput.value = formatMinuteLabel(activeMission.durationMinutes);
 
 	missionTitleInput.readOnly = true;
 	missionTimeInput.readOnly = true;
@@ -1092,7 +1172,7 @@ function renderTemplatesModal() {
       </div>
 
       <div class="template-card__meta">
-        <span>${template.durationMinutes} minutos planejados</span>
+        <span>${formatPlannedTimeLabel(template.durationMinutes)}</span>
         <span>${template.tasks.length} tarefa(s)</span>
       </div>
 
@@ -1251,7 +1331,7 @@ document.addEventListener('keydown', (event) => {
 	}
 });
 
-missionTimeInput.addEventListener('input', updateTimerPreview);
+missionTimeInput.addEventListener('input', handleMissionTimeInput);
 
 missionTitleInput.addEventListener('focus', () => {
 	if (appState !== 'initial') {

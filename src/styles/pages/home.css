@@ -1223,3 +1223,10 @@ body[data-history='open'] .history-panel {
 .task-name:-webkit-autofill:focus {
 	box-shadow: 0 0 0 1000px #2b8276 inset;
 }
+
+/* Timer com horas */
+
+.timer-display.has-hours span {
+	font-size: 4rem;
+	letter-spacing: 0.03em;
+}

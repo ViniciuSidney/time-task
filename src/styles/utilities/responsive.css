@@ -345,8 +345,8 @@
   }
 
   .about-modal__body {
-	max-height: calc(100dvh - 150px);
-}
+    max-height: calc(100dvh - 150px);
+  }
 
   .app-modal,
   .app-modal--large {
@@ -364,6 +364,14 @@
 
   .template-card__actions {
     grid-template-columns: 1fr 44px;
+  }
+
+  #templates-modal {
+    max-height: calc(100dvh - 28px);
+  }
+
+  #templates-modal .app-modal__body {
+    max-height: calc(100dvh - 170px);
   }
 }
 
@@ -448,9 +456,26 @@
   }
 
   .about-modal__body {
-	max-height: calc(100dvh - 130px);
-	padding-right: 10px;
-}
+    max-height: calc(100dvh - 130px);
+    padding-right: 10px;
+  }
+
+  #templates-modal {
+    max-height: calc(100dvh - 20px);
+  }
+
+  #templates-modal .app-modal__body {
+    max-height: calc(100dvh - 150px);
+    padding: 14px 8px 14px 14px;
+  }
+
+  #templates-modal .template-list {
+    padding-right: 0;
+  }
+
+  #templates-modal .template-card {
+    margin-right: 0;
+  }
 }
 
 /* Trava o scroll da página quando há overlay real aberto */

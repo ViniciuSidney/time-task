@@ -1230,3 +1230,12 @@ body[data-history='open'] .history-panel {
 	font-size: 4rem;
 	letter-spacing: 0.03em;
 }
+
+/* Botão de modelo bloqueado */
+
+.template-use-button:disabled {
+	white-space: normal;
+	line-height: 1.15;
+	font-size: 0.82rem;
+	opacity: 0.58;
+}

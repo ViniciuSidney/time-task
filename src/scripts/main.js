@@ -74,6 +74,8 @@ const dom = {
    02. Constantes e estado global
 ========================================================= */
 
+const DEFAULT_DOCUMENT_TITLE = "Time-Task";
+
 const APP_STATES = {
   initial: "initial",
   running: "running",
@@ -134,6 +136,7 @@ const state = {
   countdownInterval: null,
   countdownDeadline: null,
   pendingConfirmAction: null,
+  pendingCancelAction: null,
 
   activeMission: null,
   lastFinishedMission: null,
@@ -368,6 +371,8 @@ function updateTimerPreview() {
 function updateTimerDisplay(seconds) {
   dom.timerDisplayText.textContent = formatTimer(seconds);
   dom.timerDisplay.classList.toggle("has-hours", seconds >= 3600);
+
+  updateDocumentTitle(seconds);
 }
 
 /* =========================================================
@@ -380,6 +385,34 @@ function setAppState(newState) {
 
   updateActionLabels();
   updateAddTaskButtonState();
+  updateDocumentTitle();
+}
+
+function updateDocumentTitle(seconds = null) {
+  if (!state.activeMission) {
+    document.title = DEFAULT_DOCUMENT_TITLE;
+    return;
+  }
+
+  if (state.screen === APP_STATES.running || state.screen === APP_STATES.paused) {
+    const remainingSeconds = seconds ?? state.activeMission.remainingSeconds;
+    const pausePrefix = state.screen === APP_STATES.paused ? "⏸ " : "";
+
+    document.title = `${pausePrefix}${formatTimer(remainingSeconds)} - ${state.activeMission.title} | ${DEFAULT_DOCUMENT_TITLE}`;
+    return;
+  }
+
+  if (state.screen === APP_STATES.finished) {
+    if (state.activeMission.finishReason === FINISH_REASONS.timeEnded) {
+      document.title = `⏰ Tempo encerrado! | ${DEFAULT_DOCUMENT_TITLE}`;
+      return;
+    }
+
+    document.title = `✅ Missão finalizada | ${DEFAULT_DOCUMENT_TITLE}`;
+    return;
+  }
+
+  document.title = DEFAULT_DOCUMENT_TITLE;
 }
 
 function updateOverlayScrollLock() {
@@ -759,6 +792,70 @@ function stopCountdown() {
 
   clearInterval(state.countdownInterval);
   state.countdownInterval = null;
+}
+
+function getCurrentRemainingSeconds() {
+  if (!state.activeMission) {
+    return 0;
+  }
+
+  if (state.screen === APP_STATES.running && state.countdownDeadline) {
+    return Math.max(0, Math.ceil((state.countdownDeadline - Date.now()) / 1000));
+  }
+
+  return Math.max(0, Number(state.activeMission.remainingSeconds) || 0);
+}
+
+function pauseCountdownForConfirmation() {
+  if (!state.activeMission) {
+    return;
+  }
+
+  state.activeMission.remainingSeconds = getCurrentRemainingSeconds();
+
+  stopCountdown();
+  state.countdownDeadline = null;
+
+  updateTimerDisplay(state.activeMission.remainingSeconds);
+  saveActiveMissionSnapshot();
+}
+
+function resumeCountdownAfterConfirmation() {
+  if (!state.activeMission || state.screen !== APP_STATES.running) {
+    return;
+  }
+
+  startCountdown();
+  saveActiveMissionSnapshot();
+
+  setOrientationMessage("Missão retomada.", "Continue de onde parou.");
+}
+
+function requestFinishMissionConfirmation() {
+  if (!state.activeMission) {
+    return;
+  }
+
+  const shouldResumeAfterCancel = state.screen === APP_STATES.running;
+
+  if (shouldResumeAfterCancel) {
+    pauseCountdownForConfirmation();
+    setOrientationMessage("Confirme a finalização.", "O timer foi pausado temporariamente.");
+  }
+
+  openConfirmModal({
+    title: "Finalizar missão",
+    message: "Tem certeza que deseja finalizar esta missão agora? Ela será salva no histórico com o progresso atual.",
+    confirmLabel: "Finalizar",
+    onConfirm: () => {
+      finishMission(FINISH_REASONS.manual);
+    },
+    onCancel: () => {
+      if (shouldResumeAfterCancel) {
+        resumeCountdownAfterConfirmation();
+      }
+    },
+  });
 }
 
 function togglePauseMission() {
@@ -1382,17 +1479,28 @@ function openModal(modalElement) {
   updateOverlayScrollLock();
 }
 
-function closeModals() {
+function closeModals({ skipCancel = false } = {}) {
+  const cancelAction = state.pendingCancelAction;
+
   dom.modalBackdrop.hidden = true;
   dom.confirmModal.hidden = true;
   dom.templatesModal.hidden = true;
-  state.pendingConfirmAction = null;
 
-  updateOverlayScrollLock();
+  state.pendingConfirmAction = null;
+  state.pendingCancelAction = null;
+
+  if (!skipCancel && typeof cancelAction === "function") {
+    cancelAction();
+  }
+
+  if (typeof updateOverlayScrollLock === "function") {
+    updateOverlayScrollLock();
+  }
 }
 
-function openConfirmModal({ title, message, confirmLabel = "Confirmar", onConfirm }) {
+function openConfirmModal({ title, message, confirmLabel = "Confirmar", onConfirm, onCancel = null }) {
   state.pendingConfirmAction = onConfirm;
+  state.pendingCancelAction = onCancel;
 
   dom.confirmModalTitle.textContent = title;
   dom.confirmModalMessage.textContent = message;
@@ -1479,6 +1587,9 @@ function createTemplateCard(template) {
   templateCard.dataset.templateId = template.id;
 
   const formattedDate = template.createdAt ? new Date(template.createdAt).toLocaleDateString("pt-BR") : "--/--/----";
+  const isMissionActive = state.screen === APP_STATES.running || state.screen === APP_STATES.paused;
+  const useTemplateButtonText = isMissionActive ? "Finalize ou cancele a missão atual primeiro" : "Usar Modelo";
+  const useTemplateButtonTitle = isMissionActive ? "Finalize ou cancele a missão atual antes de usar um modelo." : "Usar modelo";
 
   templateCard.innerHTML = `
 		<div class="template-card__top">
@@ -1492,8 +1603,13 @@ function createTemplateCard(template) {
 		</div>
 
 		<div class="template-card__actions">
-			<button class="button button--secondary template-use-button" type="button">
-				Usar Modelo
+			<button
+			class="button button--secondary template-use-button"
+			type="button"
+			title="${useTemplateButtonTitle}"
+			${isMissionActive ? "disabled" : ""}
+			>
+				${useTemplateButtonText}
 			</button>
 
 			<button class="button button--danger template-delete-button" type="button">
@@ -1505,9 +1621,11 @@ function createTemplateCard(template) {
   const useButton = templateCard.querySelector(".template-use-button");
   const deleteButton = templateCard.querySelector(".template-delete-button");
 
-  useButton.addEventListener("click", () => {
-    useTemplate(template.id);
-  });
+  if (!isMissionActive) {
+    useButton.addEventListener("click", () => {
+      useTemplate(template.id);
+    });
+  }
 
   deleteButton.addEventListener("click", () => {
     deleteTemplate(template.id);
@@ -1618,7 +1736,7 @@ function bindEvents() {
       state.pendingConfirmAction();
     }
 
-    closeModals();
+    closeModals({ skipCancel: true });
   });
 
   dom.modalBackdrop.addEventListener("click", (event) => {
@@ -1674,7 +1792,7 @@ function handleMainActionClick() {
   }
 
   if (state.screen === APP_STATES.running || state.screen === APP_STATES.paused) {
-    finishMission(FINISH_REASONS.manual);
+    requestFinishMissionConfirmation();
     return;
   }
 

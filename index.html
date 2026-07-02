@@ -1,136 +1,139 @@
 <!doctype html>
 <html lang="pt-BR">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-		<title>Time-Task</title>
+    <title>Time-Task</title>
 
-		<link rel="stylesheet" href="./src/styles/main.css" />
-	</head>
-	<body data-screen="initial">
-		<div class="app">
-			<header class="app-title">
-				<h1>TIME-TASK</h1>
-			</header>
+    <link rel="icon" type="image/svg+xml" href="./public/favicon.svg" />
+    <link rel="shortcut icon" href="./public/favicon.ico" />
 
-			<main class="app-stage">
-				<aside class="side-area">
-					<section class="side-panel orientation-panel">
-						<h2>Orientações</h2>
+    <link rel="stylesheet" href="./src/styles/main.css" />
+  </head>
+  <body data-screen="initial">
+    <div class="app">
+      <header class="app-title">
+        <h1>TIME-TASK</h1>
+      </header>
 
-						<div class="side-panel__content" id="orientation-message">
-							<p id="orientation-line-1">Defina sua missão, escolha o tempo</p>
-							<p id="orientation-line-2">e organize pequenas tarefas.</p>
-						</div>
-					</section>
+      <main class="app-stage">
+        <aside class="side-area">
+          <section class="side-panel orientation-panel">
+            <h2>Orientações</h2>
 
-					<section class="side-panel actions-panel">
-						<h2>Ações Extras</h2>
+            <div class="side-panel__content" id="orientation-message">
+              <p id="orientation-line-1">Defina sua missão, escolha o tempo</p>
+              <p id="orientation-line-2">e organize pequenas tarefas.</p>
+            </div>
+          </section>
 
-						<div class="side-panel__content side-panel__content--actions">
-							<button id="history-button" class="button button--secondary" type="button">Histórico</button>
+          <section class="side-panel actions-panel">
+            <h2>Ações Extras</h2>
 
-							<button id="templates-button" class="button button--secondary" type="button">Modelos</button>
+            <div class="side-panel__content side-panel__content--actions">
+              <button id="history-button" class="button button--secondary" type="button">Histórico</button>
 
-							<button id="pause-toggle-button" class="button button--secondary running-only" type="button">Pausar/Retomar</button>
+              <button id="templates-button" class="button button--secondary" type="button">Modelos</button>
 
-							<div class="danger-actions running-only">
-								<button id="restart-mission-button" class="button button--danger" type="button">Reiniciar !</button>
+              <button id="pause-toggle-button" class="button button--secondary running-only" type="button">Pausar/Retomar</button>
 
-								<button id="cancel-mission-button" class="button button--danger" type="button">Cancelar !</button>
-							</div>
+              <div class="danger-actions running-only">
+                <button id="restart-mission-button" class="button button--danger" type="button">Reiniciar !</button>
 
-							<button id="clear-current-mission-button" class="button button--secondary finished-only" type="button">Limpar Missão Atual</button>
+                <button id="cancel-mission-button" class="button button--danger" type="button">Cancelar !</button>
+              </div>
 
-							<div class="finished-actions finished-only">
-								<button id="repeat-mission-button" class="button button--secondary" type="button">Repetir Missão</button>
+              <button id="clear-current-mission-button" class="button button--secondary finished-only" type="button">Limpar Missão Atual</button>
 
-								<button id="save-template-button" class="button button--secondary" type="button">Salvar Modelo</button>
-							</div>
-						</div>
-					</section>
-				</aside>
+              <div class="finished-actions finished-only">
+                <button id="repeat-mission-button" class="button button--secondary" type="button">Repetir Missão</button>
 
-				<section class="mission-panel">
-					<div class="timer-display">
-						<span>00:00</span>
-					</div>
+                <button id="save-template-button" class="button button--secondary" type="button">Salvar Modelo</button>
+              </div>
+            </div>
+          </section>
+        </aside>
 
-					<form class="mission-form">
-						<input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" autocomplete="off" />
+        <section class="mission-panel">
+          <div class="timer-display">
+            <span>00:00</span>
+          </div>
 
-						<input
-							id="mission-time"
-							class="mission-input"
-							type="text"
-							inputmode="numeric"
-							maxlength="3"
-							placeholder="Tempo em minutos"
-							aria-label="Tempo da missão em minutos"
-							autocomplete="off"
-						/>
-						<section class="task-box" aria-label="Lista de tarefas da missão">
-							<ul class="task-list" id="task-list"></ul>
-						</section>
-						<p id="task-progress" class="task-progress">0/0 Concluídas</p>
+          <form class="mission-form">
+            <input id="mission-title" class="mission-input" type="text" placeholder="Nome da Missão" aria-label="Nome da missão" autocomplete="off" />
 
-						<button id="add-task-button" class="button button--secondary add-task-button" type="button">Adicionar Tarefa</button>
+            <input
+              id="mission-time"
+              class="mission-input"
+              type="text"
+              inputmode="numeric"
+              maxlength="3"
+              placeholder="Tempo em minutos"
+              aria-label="Tempo da missão em minutos"
+              autocomplete="off"
+            />
+            <section class="task-box" aria-label="Lista de tarefas da missão">
+              <ul class="task-list" id="task-list"></ul>
+            </section>
+            <p id="task-progress" class="task-progress">0/0 Concluídas</p>
 
-						<button id="start-mission-button" class="button button--primary start-button" type="button">Começar Missão</button>
-					</form>
-				</section>
+            <button id="add-task-button" class="button button--secondary add-task-button" type="button">Adicionar Tarefa</button>
 
-				<aside class="right-area history-panel" id="history-panel" aria-label="Histórico de missões">
-					<div class="history-panel__header">
-						<h2>Histórico</h2>
+            <button id="start-mission-button" class="button button--primary start-button" type="button">Começar Missão</button>
+          </form>
+        </section>
 
-						<button id="close-history-button" class="history-close-button" type="button" aria-label="Fechar histórico">X</button>
-					</div>
+        <aside class="right-area history-panel" id="history-panel" aria-label="Histórico de missões">
+          <div class="history-panel__header">
+            <h2>Histórico</h2>
 
-					<div class="history-list" id="history-list">
-						<p class="history-empty">Nenhuma missão no histórico.</p>
-					</div>
+            <button id="close-history-button" class="history-close-button" type="button" aria-label="Fechar histórico">X</button>
+          </div>
 
-					<button id="clear-history-button" class="button button--danger history-clear-button" type="button">Apagar Histórico !</button>
-				</aside>
-			</main>
-		</div>
+          <div class="history-list" id="history-list">
+            <p class="history-empty">Nenhuma missão no histórico.</p>
+          </div>
 
-		<div class="modal-backdrop" id="modal-backdrop" hidden>
-			<section class="app-modal" id="confirm-modal" role="dialog" aria-modal="true" hidden>
-				<header class="app-modal__header">
-					<h2 id="confirm-modal-title">Confirmar ação</h2>
+          <button id="clear-history-button" class="button button--danger history-clear-button" type="button">Apagar Histórico !</button>
+        </aside>
+      </main>
+    </div>
 
-					<button class="modal-close-button" id="confirm-modal-close" type="button" aria-label="Fechar modal">X</button>
-				</header>
+    <div class="modal-backdrop" id="modal-backdrop" hidden>
+      <section class="app-modal" id="confirm-modal" role="dialog" aria-modal="true" hidden>
+        <header class="app-modal__header">
+          <h2 id="confirm-modal-title">Confirmar ação</h2>
 
-				<div class="app-modal__body">
-					<p id="confirm-modal-message">Tem certeza que deseja continuar?</p>
-				</div>
+          <button class="modal-close-button" id="confirm-modal-close" type="button" aria-label="Fechar modal">X</button>
+        </header>
 
-				<footer class="app-modal__footer">
-					<button id="confirm-modal-cancel" class="button button--secondary" type="button">Voltar</button>
+        <div class="app-modal__body">
+          <p id="confirm-modal-message">Tem certeza que deseja continuar?</p>
+        </div>
 
-					<button id="confirm-modal-confirm" class="button button--danger" type="button">Confirmar</button>
-				</footer>
-			</section>
+        <footer class="app-modal__footer">
+          <button id="confirm-modal-cancel" class="button button--secondary" type="button">Voltar</button>
 
-			<section class="app-modal app-modal--large" id="templates-modal" role="dialog" aria-modal="true" hidden>
-				<header class="app-modal__header">
-					<h2>Modelos Salvos</h2>
+          <button id="confirm-modal-confirm" class="button button--danger" type="button">Confirmar</button>
+        </footer>
+      </section>
 
-					<button class="modal-close-button" id="templates-modal-close" type="button" aria-label="Fechar modal">X</button>
-				</header>
+      <section class="app-modal app-modal--large" id="templates-modal" role="dialog" aria-modal="true" hidden>
+        <header class="app-modal__header">
+          <h2>Modelos Salvos</h2>
 
-				<div class="app-modal__body">
-					<div class="template-list" id="template-list">
-						<p class="modal-empty">Nenhum modelo salvo ainda.</p>
-					</div>
-				</div>
-			</section>
-		</div>
+          <button class="modal-close-button" id="templates-modal-close" type="button" aria-label="Fechar modal">X</button>
+        </header>
 
-		<script src="./src/scripts/main.js"></script>
-	</body>
+        <div class="app-modal__body">
+          <div class="template-list" id="template-list">
+            <p class="modal-empty">Nenhum modelo salvo ainda.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script src="./src/scripts/main.js"></script>
+  </body>
 </html>

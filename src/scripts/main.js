@@ -1,67 +1,147 @@
 console.log('Time-Task iniciado.');
 
-const body = document.body;
+/* =========================================================
+   Time-Task - main.js
+   Estrutura:
+   01. Seletores DOM
+   02. Constantes e estado global
+   03. Fábricas e utilitários gerais
+   04. Formatação e validação de tempo
+   05. Interface e estados visuais
+   06. Tarefas
+   07. Missões e timer
+   08. Armazenamento local
+   09. Histórico
+   10. Modais
+   11. Modelos
+   12. Eventos
+   13. Inicialização
+========================================================= */
 
-const missionForm = document.querySelector('.mission-form');
-const missionTitleInput = document.querySelector('#mission-title');
-const missionTimeInput = document.querySelector('#mission-time');
-const timerDisplay = document.querySelector('.timer-display');
-const timerDisplayText = document.querySelector('.timer-display span');
+/* =========================================================
+   01. Seletores DOM
+========================================================= */
 
-const taskListElement = document.querySelector('#task-list');
-const taskProgressElement = document.querySelector('#task-progress');
+const dom = {
+	body: document.body,
 
-const addTaskButton = document.querySelector('#add-task-button');
-const startMissionButton = document.querySelector('#start-mission-button');
+	missionForm: document.querySelector('.mission-form'),
+	missionTitleInput: document.querySelector('#mission-title'),
+	missionTimeInput: document.querySelector('#mission-time'),
+	timerDisplay: document.querySelector('.timer-display'),
+	timerDisplayText: document.querySelector('.timer-display span'),
 
-const historyButton = document.querySelector('#history-button');
-const pauseToggleButton = document.querySelector('#pause-toggle-button');
-const restartMissionButton = document.querySelector('#restart-mission-button');
-const cancelMissionButton = document.querySelector('#cancel-mission-button');
+	taskList: document.querySelector('#task-list'),
+	taskProgress: document.querySelector('#task-progress'),
 
-const clearCurrentMissionButton = document.querySelector('#clear-current-mission-button');
-const repeatMissionButton = document.querySelector('#repeat-mission-button');
-const saveTemplateButton = document.querySelector('#save-template-button');
+	addTaskButton: document.querySelector('#add-task-button'),
+	startMissionButton: document.querySelector('#start-mission-button'),
 
-const historyPanel = document.querySelector('#history-panel');
-const historyListElement = document.querySelector('#history-list');
-const closeHistoryButton = document.querySelector('#close-history-button');
-const clearHistoryButton = document.querySelector('#clear-history-button');
+	historyButton: document.querySelector('#history-button'),
+	pauseToggleButton: document.querySelector('#pause-toggle-button'),
+	restartMissionButton: document.querySelector('#restart-mission-button'),
+	cancelMissionButton: document.querySelector('#cancel-mission-button'),
 
-const orientationLine1 = document.querySelector('#orientation-line-1');
-const orientationLine2 = document.querySelector('#orientation-line-2');
+	clearCurrentMissionButton: document.querySelector('#clear-current-mission-button'),
+	repeatMissionButton: document.querySelector('#repeat-mission-button'),
+	saveTemplateButton: document.querySelector('#save-template-button'),
 
-const templatesButton = document.querySelector('#templates-button');
+	historyPanel: document.querySelector('#history-panel'),
+	historyList: document.querySelector('#history-list'),
+	closeHistoryButton: document.querySelector('#close-history-button'),
+	clearHistoryButton: document.querySelector('#clear-history-button'),
 
-const modalBackdrop = document.querySelector('#modal-backdrop');
+	orientationLine1: document.querySelector('#orientation-line-1'),
+	orientationLine2: document.querySelector('#orientation-line-2'),
 
-const confirmModal = document.querySelector('#confirm-modal');
-const confirmModalTitle = document.querySelector('#confirm-modal-title');
-const confirmModalMessage = document.querySelector('#confirm-modal-message');
-const confirmModalClose = document.querySelector('#confirm-modal-close');
-const confirmModalCancel = document.querySelector('#confirm-modal-cancel');
-const confirmModalConfirm = document.querySelector('#confirm-modal-confirm');
+	templatesButton: document.querySelector('#templates-button'),
 
-const templatesModal = document.querySelector('#templates-modal');
-const templatesModalClose = document.querySelector('#templates-modal-close');
-const templateListElement = document.querySelector('#template-list');
+	modalBackdrop: document.querySelector('#modal-backdrop'),
+
+	confirmModal: document.querySelector('#confirm-modal'),
+	confirmModalTitle: document.querySelector('#confirm-modal-title'),
+	confirmModalMessage: document.querySelector('#confirm-modal-message'),
+	confirmModalClose: document.querySelector('#confirm-modal-close'),
+	confirmModalCancel: document.querySelector('#confirm-modal-cancel'),
+	confirmModalConfirm: document.querySelector('#confirm-modal-confirm'),
+
+	templatesModal: document.querySelector('#templates-modal'),
+	templatesModalClose: document.querySelector('#templates-modal-close'),
+	templateList: document.querySelector('#template-list')
+};
+
+/* =========================================================
+   02. Constantes e estado global
+========================================================= */
+
+const APP_STATES = {
+	initial: 'initial',
+	running: 'running',
+	paused: 'paused',
+	finished: 'finished'
+};
+
+const FINISH_REASONS = {
+	manual: 'manual',
+	timeEnded: 'time-ended'
+};
 
 const MAX_TASKS = 7;
 const MAX_MISSION_MINUTES = 120;
+
 const STORAGE_KEYS = {
 	history: 'time-task:history',
 	templates: 'time-task:templates'
 };
 
-let appState = 'initial';
-let countdownInterval = null;
-let countdownDeadline = null;
-let pendingConfirmAction = null;
+const DANGER_CONFIRM_MESSAGES = {
+	restart: {
+		title: 'Reiniciar missão',
+		message: 'Tem certeza que deseja reiniciar a missão atual? O tempo voltará ao início e as tarefas serão desmarcadas.',
+		confirmLabel: 'Reiniciar'
+	},
+	cancel: {
+		title: 'Cancelar missão',
+		message: 'Tem certeza que deseja cancelar a missão atual? O progresso desta execução será perdido.',
+		confirmLabel: 'Cancelar'
+	},
+	'clear-history': {
+		title: 'Apagar histórico',
+		message: 'Tem certeza que deseja apagar todo o histórico? Essa ação não poderá ser desfeita.',
+		confirmLabel: 'Apagar'
+	},
+	'delete-history-item': {
+		title: 'Excluir registro',
+		message: 'Tem certeza que deseja excluir esta missão do histórico?',
+		confirmLabel: 'Excluir'
+	},
+	'clear-current': {
+		title: 'Limpar missão atual',
+		message: 'Tem certeza que deseja limpar a missão atual e voltar para a tela inicial?',
+		confirmLabel: 'Limpar'
+	},
+	'delete-template': {
+		title: 'Excluir modelo',
+		message: 'Tem certeza que deseja excluir este modelo salvo?',
+		confirmLabel: 'Excluir'
+	}
+};
 
-let activeMission = null;
-let lastFinishedMission = null;
+const state = {
+	screen: APP_STATES.initial,
+	countdownInterval: null,
+	countdownDeadline: null,
+	pendingConfirmAction: null,
 
-let tasks = [createTask(''), createTask(''), createTask('')];
+	activeMission: null,
+	lastFinishedMission: null,
+
+	tasks: [createTask(), createTask(), createTask()]
+};
+
+/* =========================================================
+   03. Fábricas e utilitários gerais
+========================================================= */
 
 function createTask(name = '') {
 	return {
@@ -72,54 +152,33 @@ function createTask(name = '') {
 }
 
 function createId() {
-	if (crypto.randomUUID) {
-		return crypto.randomUUID();
+	if (globalThis.crypto?.randomUUID) {
+		return globalThis.crypto.randomUUID();
 	}
 
-	return `task-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+	return `id-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function cloneData(data) {
+	if (typeof structuredClone === 'function') {
+		return structuredClone(data);
+	}
+
+	return JSON.parse(JSON.stringify(data));
+}
+
+function escapeHTML(value) {
+	return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 }
 
 function setOrientationMessage(line1, line2) {
-	orientationLine1.textContent = line1;
-	orientationLine2.textContent = line2;
+	dom.orientationLine1.textContent = line1;
+	dom.orientationLine2.textContent = line2;
 }
 
-function setAppState(newState) {
-	appState = newState;
-	body.dataset.screen = newState;
-
-	updateActionLabels();
-	updateAddTaskButtonState();
-}
-
-function updateActionLabels() {
-	if (appState === 'initial') {
-		addTaskButton.textContent = 'Adicionar Tarefa';
-		startMissionButton.textContent = 'Começar Missão';
-		pauseToggleButton.textContent = 'Pausar/Retomar';
-		return;
-	}
-
-	if (appState === 'running') {
-		addTaskButton.textContent = 'Adicionar Tarefa';
-		startMissionButton.textContent = 'Finalizar Missão!';
-		pauseToggleButton.textContent = 'Pausar';
-		return;
-	}
-
-	if (appState === 'paused') {
-		addTaskButton.textContent = 'Adicionar Tarefa';
-		startMissionButton.textContent = 'Finalizar Missão!';
-		pauseToggleButton.textContent = 'Retomar';
-		return;
-	}
-
-	if (appState === 'finished') {
-		addTaskButton.textContent = 'Adicionar Tarefa';
-		startMissionButton.textContent = 'Nova Missão';
-		pauseToggleButton.textContent = 'Pausar/Retomar';
-	}
-}
+/* =========================================================
+   04. Formatação e validação de tempo
+========================================================= */
 
 function parseMissionMinutes(value) {
 	const text = String(value).toLowerCase().trim();
@@ -176,47 +235,17 @@ function formatMinuteLabel(minutes) {
 	return `${hourLabel} e ${minuteLabel}`;
 }
 
-function handleMissionTimeInput() {
-	const rawMinutes = parseMissionMinutes(missionTimeInput.value);
+function formatPlannedTimeLabel(minutes) {
+	const label = formatMinuteLabel(minutes);
 
-	if (!rawMinutes || rawMinutes <= 0) {
-		updateTimerPreview();
-		return;
+	if (!label) {
+		return 'Tempo não informado';
 	}
 
-	if (rawMinutes > MAX_MISSION_MINUTES) {
-		missionTimeInput.value = String(MAX_MISSION_MINUTES);
-
-		setOrientationMessage('Tempo máximo atingido.', `Use até ${formatMinuteLabel(MAX_MISSION_MINUTES)} por missão.`);
-	}
-
-	updateTimerPreview();
+	return `Planejado: ${label}`;
 }
 
-function normalizeMissionTimeInput() {
-	const rawMinutes = parseMissionMinutes(missionTimeInput.value);
-	const limitedMinutes = limitMissionMinutes(rawMinutes);
-
-	if (!limitedMinutes) {
-		missionTimeInput.value = '';
-		updateTimerPreview();
-		return;
-	}
-
-	missionTimeInput.value = formatMinuteLabel(limitedMinutes);
-	updateTimerPreview();
-}
-
-function prepareMissionTimeEditing() {
-	if (appState !== 'initial') {
-		return;
-	}
-
-	const minutes = parseMissionMinutes(missionTimeInput.value);
-	missionTimeInput.value = minutes ? String(limitMissionMinutes(minutes)) : '';
-}
-
-function formatTime(totalSeconds) {
+function formatTimer(totalSeconds) {
 	const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
 
 	const hours = Math.floor(safeSeconds / 3600);
@@ -230,6 +259,32 @@ function formatTime(totalSeconds) {
 	return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
+function formatDurationLabel(totalSeconds) {
+	const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
+
+	const hours = Math.floor(safeSeconds / 3600);
+	const minutes = Math.floor((safeSeconds % 3600) / 60);
+	const seconds = safeSeconds % 60;
+
+	if (hours > 0 && minutes > 0) {
+		return `${hours}h ${minutes}min ${String(seconds).padStart(2, '0')}s`;
+	}
+
+	if (hours > 0) {
+		return `${hours}h ${String(seconds).padStart(2, '0')}s`;
+	}
+
+	if (minutes > 0 && seconds > 0) {
+		return `${minutes}min ${String(seconds).padStart(2, '0')}s`;
+	}
+
+	if (minutes > 0) {
+		return `${minutes}min`;
+	}
+
+	return `${seconds}s`;
+}
+
 function calculateElapsedSeconds(mission) {
 	if (!mission) {
 		return 0;
@@ -238,29 +293,67 @@ function calculateElapsedSeconds(mission) {
 	return Math.max(0, mission.totalSeconds - mission.remainingSeconds);
 }
 
-function formatDurationLabel(totalSeconds) {
-	const safeSeconds = Math.max(0, Number(totalSeconds) || 0);
-
-	const minutes = Math.floor(safeSeconds / 60);
-	const seconds = safeSeconds % 60;
-
-	if (minutes === 0) {
-		return `${seconds}s`;
+function calculateHistoryElapsedSeconds(mission) {
+	if (!mission) {
+		return 0;
 	}
 
-	if (seconds === 0) {
-		return `${minutes} min`;
+	if (typeof mission.elapsedSeconds === 'number') {
+		return mission.elapsedSeconds;
 	}
 
-	return `${minutes} min ${String(seconds).padStart(2, '0')}s`;
+	if (typeof mission.totalSeconds === 'number' && typeof mission.remainingSeconds === 'number') {
+		return Math.max(0, mission.totalSeconds - mission.remainingSeconds);
+	}
+
+	return 0;
 }
 
-function updateTimerPreview() {
-	if (appState !== 'initial') {
+function handleMissionTimeInput() {
+	const rawMinutes = parseMissionMinutes(dom.missionTimeInput.value);
+
+	if (!rawMinutes || rawMinutes <= 0) {
+		updateTimerPreview();
 		return;
 	}
 
-	const minutes = limitMissionMinutes(parseMissionMinutes(missionTimeInput.value));
+	if (rawMinutes > MAX_MISSION_MINUTES) {
+		dom.missionTimeInput.value = String(MAX_MISSION_MINUTES);
+		setOrientationMessage('Tempo máximo atingido.', `Use até ${formatMinuteLabel(MAX_MISSION_MINUTES)} por missão.`);
+	}
+
+	updateTimerPreview();
+}
+
+function normalizeMissionTimeInput() {
+	const rawMinutes = parseMissionMinutes(dom.missionTimeInput.value);
+	const limitedMinutes = limitMissionMinutes(rawMinutes);
+
+	if (!limitedMinutes) {
+		dom.missionTimeInput.value = '';
+		updateTimerPreview();
+		return;
+	}
+
+	dom.missionTimeInput.value = formatMinuteLabel(limitedMinutes);
+	updateTimerPreview();
+}
+
+function prepareMissionTimeEditing() {
+	if (state.screen !== APP_STATES.initial) {
+		return;
+	}
+
+	const minutes = parseMissionMinutes(dom.missionTimeInput.value);
+	dom.missionTimeInput.value = minutes ? String(limitMissionMinutes(minutes)) : '';
+}
+
+function updateTimerPreview() {
+	if (state.screen !== APP_STATES.initial) {
+		return;
+	}
+
+	const minutes = limitMissionMinutes(parseMissionMinutes(dom.missionTimeInput.value));
 
 	if (!minutes || minutes <= 0) {
 		updateTimerDisplay(0);
@@ -270,51 +363,87 @@ function updateTimerPreview() {
 	updateTimerDisplay(minutes * 60);
 }
 
-function renderTasks(focusTaskId = null) {
-	taskListElement.innerHTML = '';
+function updateTimerDisplay(seconds) {
+	dom.timerDisplayText.textContent = formatTimer(seconds);
+	dom.timerDisplay.classList.toggle('has-hours', seconds >= 3600);
+}
 
-	if (tasks.length === 0) {
-		taskListElement.innerHTML = `
-      <li class="task-empty">
-        Nenhuma tarefa adicionada.
-      </li>
-    `;
+/* =========================================================
+   05. Interface e estados visuais
+========================================================= */
+
+function setAppState(newState) {
+	state.screen = newState;
+	dom.body.dataset.screen = newState;
+
+	updateActionLabels();
+	updateAddTaskButtonState();
+}
+
+function updateActionLabels() {
+	const labelsByState = {
+		[APP_STATES.initial]: {
+			addTask: 'Adicionar Tarefa',
+			main: 'Começar Missão',
+			pause: 'Pausar/Retomar'
+		},
+		[APP_STATES.running]: {
+			addTask: 'Adicionar Tarefa',
+			main: 'Finalizar Missão!',
+			pause: 'Pausar'
+		},
+		[APP_STATES.paused]: {
+			addTask: 'Adicionar Tarefa',
+			main: 'Finalizar Missão!',
+			pause: 'Retomar'
+		},
+		[APP_STATES.finished]: {
+			addTask: 'Adicionar Tarefa',
+			main: 'Nova Missão',
+			pause: 'Pausar/Retomar'
+		}
+	};
+
+	const labels = labelsByState[state.screen];
+
+	dom.addTaskButton.textContent = labels.addTask;
+	dom.startMissionButton.textContent = labels.main;
+	dom.pauseToggleButton.textContent = labels.pause;
+}
+
+function resetMissionForm() {
+	dom.missionTitleInput.value = '';
+	dom.missionTimeInput.value = '';
+	dom.missionTitleInput.readOnly = false;
+	dom.missionTimeInput.readOnly = false;
+
+	dom.timerDisplay.classList.remove('is-warning', 'is-finished');
+	updateTimerDisplay(0);
+}
+
+/* =========================================================
+   06. Tarefas
+========================================================= */
+
+function renderTasks(focusTaskId = null) {
+	dom.taskList.innerHTML = '';
+
+	if (state.tasks.length === 0) {
+		dom.taskList.innerHTML = `
+			<li class="task-empty">
+				Nenhuma tarefa adicionada.
+			</li>
+		`;
 
 		updateTaskProgress();
 		updateAddTaskButtonState();
 		return;
 	}
 
-	tasks.forEach((task) => {
-		const taskItem = document.createElement('li');
-		taskItem.className = 'task-item';
+	state.tasks.forEach((task) => {
+		const taskItem = createTaskElement(task);
 
-		if (task.completed) {
-			taskItem.classList.add('is-completed');
-		}
-
-		taskItem.dataset.taskId = task.id;
-
-		taskItem.innerHTML = `
-      <label class="task-check">
-        <input type="checkbox" ${task.completed ? 'checked' : ''} />
-        <span></span>
-      </label>
-
-      <input
-        class="task-name"
-        type="text"
-        placeholder="Nome Tarefa"
-        aria-label="Nome da tarefa"
-        value="${escapeHTML(task.name)}"
-      />
-
-      <button class="task-remove" type="button" aria-label="Remover tarefa">
-        x
-      </button>
-    `;
-
-		taskListElement.appendChild(taskItem);
+		dom.taskList.appendChild(taskItem);
 
 		const checkbox = taskItem.querySelector('input[type="checkbox"]');
 		const taskNameInput = taskItem.querySelector('.task-name');
@@ -329,19 +458,7 @@ function renderTasks(focusTaskId = null) {
 		});
 
 		taskNameInput.addEventListener('keydown', (event) => {
-			if (event.key !== 'Enter') {
-				return;
-			}
-
-			event.preventDefault();
-
-			if (taskNameInput.value.trim() === '') {
-				setOrientationMessage('Antes de adicionar outra tarefa,', 'preencha a tarefa atual.');
-				taskNameInput.focus();
-				return;
-			}
-
-			addTask();
+			handleTaskNameKeydown(event, taskNameInput);
 		});
 
 		removeButton.addEventListener('click', () => {
@@ -357,8 +474,56 @@ function renderTasks(focusTaskId = null) {
 	updateAddTaskButtonState();
 }
 
+function createTaskElement(task) {
+	const taskItem = document.createElement('li');
+	taskItem.className = 'task-item';
+	taskItem.dataset.taskId = task.id;
+
+	if (task.completed) {
+		taskItem.classList.add('is-completed');
+	}
+
+	taskItem.innerHTML = `
+		<label class="task-check">
+			<input type="checkbox" ${task.completed ? 'checked' : ''} ${state.screen === APP_STATES.finished ? 'disabled' : ''} />
+			<span></span>
+		</label>
+
+		<input
+			class="task-name"
+			type="text"
+			placeholder="Nome Tarefa"
+			aria-label="Nome da tarefa"
+			value="${escapeHTML(task.name)}"
+			${state.screen === APP_STATES.finished ? 'readonly' : ''}
+		/>
+
+		<button class="task-remove" type="button" aria-label="Remover tarefa">
+			x
+		</button>
+	`;
+
+	return taskItem;
+}
+
+function handleTaskNameKeydown(event, taskNameInput) {
+	if (event.key !== 'Enter') {
+		return;
+	}
+
+	event.preventDefault();
+
+	if (taskNameInput.value.trim() === '') {
+		setOrientationMessage('Antes de adicionar outra tarefa,', 'preencha a tarefa atual.');
+		taskNameInput.focus();
+		return;
+	}
+
+	addTask();
+}
+
 function updateTaskName(taskId, newName) {
-	tasks = tasks.map((task) => {
+	state.tasks = state.tasks.map((task) => {
 		if (task.id !== taskId) {
 			return task;
 		}
@@ -369,13 +534,11 @@ function updateTaskName(taskId, newName) {
 		};
 	});
 
-	if (activeMission) {
-		activeMission.tasks = tasks;
-	}
+	syncActiveMissionTasks();
 }
 
 function updateTaskCompleted(taskId, completed) {
-	tasks = tasks.map((task) => {
+	state.tasks = state.tasks.map((task) => {
 		if (task.id !== taskId) {
 			return task;
 		}
@@ -386,74 +549,67 @@ function updateTaskCompleted(taskId, completed) {
 		};
 	});
 
-	if (activeMission) {
-		activeMission.tasks = tasks;
-	}
-
+	syncActiveMissionTasks();
 	renderTasks();
 
-	if (appState === 'running' || appState === 'paused') {
-		const completedTasks = tasks.filter((task) => task.completed).length;
-		const totalTasks = tasks.length;
+	if (state.screen === APP_STATES.running || state.screen === APP_STATES.paused) {
+		const completedTasks = state.tasks.filter((task) => task.completed).length;
+		const totalTasks = state.tasks.length;
 
 		setOrientationMessage('Missão em andamento...', `${completedTasks}/${totalTasks} tarefas concluídas.`);
 	}
 }
 
 function addTask() {
-	if (tasks.length >= MAX_TASKS) {
+	if (state.tasks.length >= MAX_TASKS) {
 		setOrientationMessage('Limite recomendado atingido.', 'Use até 7 microtarefas por missão.');
 		return;
 	}
 
 	const newTask = createTask();
 
-	tasks.push(newTask);
-
-	if (activeMission) {
-		activeMission.tasks = tasks;
-	}
-
+	state.tasks.push(newTask);
+	syncActiveMissionTasks();
 	renderTasks(newTask.id);
 
 	setOrientationMessage('Nova tarefa adicionada.', 'Descreva uma ação curta e objetiva.');
 }
 
 function removeTask(taskId) {
-	if (tasks.length === 1) {
-		tasks = [createTask('')];
-
-		if (activeMission) {
-			activeMission.tasks = tasks;
-		}
-
-		renderTasks(tasks[0].id);
+	if (state.tasks.length === 1) {
+		state.tasks = [createTask()];
+		syncActiveMissionTasks();
+		renderTasks(state.tasks[0].id);
 
 		setOrientationMessage('A missão precisa ter', 'pelo menos uma tarefa.');
 		return;
 	}
 
-	tasks = tasks.filter((task) => task.id !== taskId);
+	state.tasks = state.tasks.filter((task) => task.id !== taskId);
 
-	if (activeMission) {
-		activeMission.tasks = tasks;
-	}
-
+	syncActiveMissionTasks();
 	renderTasks();
 
 	setOrientationMessage('Tarefa removida.', 'Mantenha apenas o essencial.');
 }
 
 function updateAddTaskButtonState() {
-	const reachedLimit = tasks.length >= MAX_TASKS;
-	const isFinished = appState === 'finished';
+	const reachedLimit = state.tasks.length >= MAX_TASKS;
+	const isFinished = state.screen === APP_STATES.finished;
 
-	addTaskButton.disabled = reachedLimit || isFinished;
-	addTaskButton.classList.toggle('is-disabled', reachedLimit || isFinished);
+	dom.addTaskButton.disabled = reachedLimit || isFinished;
+	dom.addTaskButton.classList.toggle('is-disabled', reachedLimit || isFinished);
+}
+
+function updateTaskProgress() {
+	const totalTasks = state.tasks.length;
+	const completedTasks = state.tasks.filter((task) => task.completed).length;
+
+	dom.taskProgress.textContent = `${completedTasks}/${totalTasks} Concluídas`;
 }
 
 function getFilledTasks() {
-	return tasks
+	return state.tasks
 		.map((task) => ({
 			...task,
 			name: task.name.trim(),
@@ -462,29 +618,50 @@ function getFilledTasks() {
 		.filter((task) => task.name !== '');
 }
 
+function focusFirstEmptyTask() {
+	const firstEmptyTask = state.tasks.find((task) => task.name.trim() === '');
+
+	if (!firstEmptyTask) {
+		return;
+	}
+
+	renderTasks(firstEmptyTask.id);
+}
+
+function syncActiveMissionTasks() {
+	if (state.activeMission) {
+		state.activeMission.tasks = state.tasks;
+	}
+}
+
+/* =========================================================
+   07. Missões e timer
+========================================================= */
+
 function validateMissionCreation() {
-	const missionTitle = missionTitleInput.value.trim();
-	const missionMinutes = limitMissionMinutes(parseMissionMinutes(missionTimeInput.value));
+	const missionTitle = dom.missionTitleInput.value.trim();
+	const rawMissionMinutes = parseMissionMinutes(dom.missionTimeInput.value);
+	const missionMinutes = limitMissionMinutes(rawMissionMinutes);
 	const filledTasks = getFilledTasks();
 
 	if (missionTitle === '') {
 		setOrientationMessage('Dê um nome para sua missão.', 'Exemplo: revisar matemática.');
-		missionTitleInput.focus();
+		dom.missionTitleInput.focus();
 		return null;
 	}
 
 	if (!missionMinutes || missionMinutes <= 0) {
 		setOrientationMessage('Defina um tempo válido.', 'Use minutos acima de zero.');
-		missionTimeInput.focus();
+		dom.missionTimeInput.focus();
 		return null;
 	}
 
-	if (parseMissionMinutes(missionTimeInput.value) > MAX_MISSION_MINUTES) {
+	if (rawMissionMinutes > MAX_MISSION_MINUTES) {
 		setOrientationMessage('Tempo acima do permitido.', `O máximo é ${formatMinuteLabel(MAX_MISSION_MINUTES)}.`);
 
-		missionTimeInput.value = formatMinuteLabel(MAX_MISSION_MINUTES);
+		dom.missionTimeInput.value = formatMinuteLabel(MAX_MISSION_MINUTES);
 		updateTimerPreview();
-		missionTimeInput.focus();
+		dom.missionTimeInput.focus();
 
 		return null;
 	}
@@ -511,7 +688,7 @@ function startMission() {
 		return;
 	}
 
-	activeMission = {
+	state.activeMission = {
 		...missionData,
 		id: createId(),
 		startedAt: new Date().toISOString(),
@@ -519,19 +696,19 @@ function startMission() {
 		savedToHistory: false
 	};
 
-	tasks = activeMission.tasks;
+	state.tasks = state.activeMission.tasks;
 
-	missionTitleInput.value = activeMission.title;
-	missionTimeInput.value = formatMinuteLabel(activeMission.durationMinutes);
+	dom.missionTitleInput.value = state.activeMission.title;
+	dom.missionTimeInput.value = formatMinuteLabel(state.activeMission.durationMinutes);
 
-	missionTitleInput.readOnly = true;
-	missionTimeInput.readOnly = true;
+	dom.missionTitleInput.readOnly = true;
+	dom.missionTimeInput.readOnly = true;
 
-	timerDisplay.classList.remove('is-warning', 'is-finished');
+	dom.timerDisplay.classList.remove('is-warning', 'is-finished');
 
-	setAppState('running');
+	setAppState(APP_STATES.running);
 	renderTasks();
-	updateTimerDisplay(activeMission.remainingSeconds);
+	updateTimerDisplay(state.activeMission.remainingSeconds);
 	startCountdown();
 
 	setOrientationMessage('Missão em andamento...', 'Foco na conclusão!');
@@ -540,17 +717,15 @@ function startMission() {
 function startCountdown() {
 	stopCountdown();
 
-	countdownDeadline = Date.now() + activeMission.remainingSeconds * 1000;
+	state.countdownDeadline = Date.now() + state.activeMission.remainingSeconds * 1000;
 
-	countdownInterval = setInterval(() => {
-		const remainingSeconds = Math.max(0, Math.ceil((countdownDeadline - Date.now()) / 1000));
+	state.countdownInterval = setInterval(() => {
+		const remainingSeconds = Math.max(0, Math.ceil((state.countdownDeadline - Date.now()) / 1000));
 
-		activeMission.remainingSeconds = remainingSeconds;
+		state.activeMission.remainingSeconds = remainingSeconds;
 		updateTimerDisplay(remainingSeconds);
 
-		if (remainingSeconds <= 60 && remainingSeconds > 0) {
-			timerDisplay.classList.add('is-warning');
-		}
+		dom.timerDisplay.classList.toggle('is-warning', remainingSeconds <= 60 && remainingSeconds > 0);
 
 		if (remainingSeconds === 0) {
 			handleTimeFinished();
@@ -559,55 +734,52 @@ function startCountdown() {
 }
 
 function stopCountdown() {
-	if (countdownInterval) {
-		clearInterval(countdownInterval);
-		countdownInterval = null;
-	}
-}
-
-function updateTimerDisplay(seconds) {
-	timerDisplayText.textContent = formatTime(seconds);
-	timerDisplay.classList.toggle('has-hours', seconds >= 3600);
-}
-
-function togglePauseMission() {
-	if (!activeMission) {
+	if (!state.countdownInterval) {
 		return;
 	}
 
-	if (appState === 'running') {
+	clearInterval(state.countdownInterval);
+	state.countdownInterval = null;
+}
+
+function togglePauseMission() {
+	if (!state.activeMission) {
+		return;
+	}
+
+	if (state.screen === APP_STATES.running) {
 		stopCountdown();
-		setAppState('paused');
+		setAppState(APP_STATES.paused);
 		setOrientationMessage('Missão pausada.', 'Retome quando estiver pronto.');
 		return;
 	}
 
-	if (appState === 'paused') {
-		setAppState('running');
+	if (state.screen === APP_STATES.paused) {
+		setAppState(APP_STATES.running);
 		startCountdown();
 		setOrientationMessage('Missão retomada.', 'Volte para a execução.');
 	}
 }
 
 function restartMission() {
-	if (!activeMission) {
+	if (!state.activeMission) {
 		return;
 	}
 
-	activeMission.remainingSeconds = activeMission.totalSeconds;
+	state.activeMission.remainingSeconds = state.activeMission.totalSeconds;
 
-	tasks = tasks.map((task) => ({
+	state.tasks = state.tasks.map((task) => ({
 		...task,
 		completed: false
 	}));
 
-	activeMission.tasks = tasks;
+	syncActiveMissionTasks();
 
-	timerDisplay.classList.remove('is-warning', 'is-finished');
+	dom.timerDisplay.classList.remove('is-warning', 'is-finished');
 
-	setAppState('running');
+	setAppState(APP_STATES.running);
 	renderTasks();
-	updateTimerDisplay(activeMission.remainingSeconds);
+	updateTimerDisplay(state.activeMission.remainingSeconds);
 	startCountdown();
 
 	setOrientationMessage('Missão reiniciada.', 'Comece novamente com calma.');
@@ -616,49 +788,42 @@ function restartMission() {
 function cancelMission() {
 	stopCountdown();
 
-	activeMission = null;
-	tasks = [createTask(''), createTask(''), createTask('')];
+	state.activeMission = null;
+	state.tasks = [createTask(), createTask(), createTask()];
 
-	missionTitleInput.value = '';
-	missionTimeInput.value = '';
-	missionTitleInput.readOnly = false;
-	missionTimeInput.readOnly = false;
-
-	timerDisplay.classList.remove('is-warning', 'is-finished');
-	timerDisplayText.textContent = '00:00';
-
-	setAppState('initial');
+	resetMissionForm();
+	setAppState(APP_STATES.initial);
 	renderTasks();
 
 	setOrientationMessage('Missão cancelada.', 'Crie uma nova quando quiser.');
 }
 
-function finishMission(reason = 'manual') {
-	if (!activeMission) {
+function finishMission(reason = FINISH_REASONS.manual) {
+	if (!state.activeMission) {
 		return;
 	}
 
 	stopCountdown();
 
-	activeMission.finishedAt = new Date().toISOString();
-	activeMission.finishReason = reason;
-	activeMission.completedTasks = tasks.filter((task) => task.completed).length;
-	activeMission.totalTasks = tasks.length;
-	activeMission.tasks = tasks;
-	activeMission.elapsedSeconds = calculateElapsedSeconds(activeMission);
+	state.activeMission.finishedAt = new Date().toISOString();
+	state.activeMission.finishReason = reason;
+	state.activeMission.completedTasks = state.tasks.filter((task) => task.completed).length;
+	state.activeMission.totalTasks = state.tasks.length;
+	state.activeMission.tasks = state.tasks;
+	state.activeMission.elapsedSeconds = calculateElapsedSeconds(state.activeMission);
 
-	saveMissionToHistory(activeMission);
+	saveMissionToHistory(state.activeMission);
 
-	lastFinishedMission = structuredClone(activeMission);
+	state.lastFinishedMission = cloneData(state.activeMission);
 
-	timerDisplay.classList.remove('is-warning');
-	timerDisplay.classList.add('is-finished');
+	dom.timerDisplay.classList.remove('is-warning');
+	dom.timerDisplay.classList.add('is-finished');
 
-	setAppState('finished');
+	setAppState(APP_STATES.finished);
 	renderTasks();
 	updateTaskProgress();
 
-	if (reason === 'time-ended') {
+	if (reason === FINISH_REASONS.timeEnded) {
 		setOrientationMessage('Tempo encerrado!', 'Missão adicionada ao histórico.');
 		return;
 	}
@@ -669,96 +834,70 @@ function finishMission(reason = 'manual') {
 function resetToNewMission() {
 	stopCountdown();
 
-	activeMission = null;
+	state.activeMission = null;
+	state.tasks = [createTask(), createTask(), createTask()];
 
-	tasks = [createTask(''), createTask(''), createTask('')];
-
-	missionTitleInput.value = '';
-	missionTimeInput.value = '';
-	missionTitleInput.readOnly = false;
-	missionTimeInput.readOnly = false;
-
-	timerDisplay.classList.remove('is-warning', 'is-finished');
-	timerDisplayText.textContent = '00:00';
-
-	setAppState('initial');
+	resetMissionForm();
+	setAppState(APP_STATES.initial);
 	renderTasks();
 
 	setOrientationMessage('Defina sua missão, escolha o tempo', 'e organize pequenas tarefas.');
 }
 
 function handleTimeFinished() {
-	finishMission('time-ended');
+	finishMission(FINISH_REASONS.timeEnded);
 }
 
-function updateTaskProgress() {
-	const totalTasks = tasks.length;
-	const completedTasks = tasks.filter((task) => task.completed).length;
-
-	taskProgressElement.textContent = `${completedTasks}/${totalTasks} Concluídas`;
-}
-
-function focusFirstEmptyTask() {
-	const firstEmptyTask = tasks.find((task) => task.name.trim() === '');
-
-	if (!firstEmptyTask) {
+function repeatLastMission() {
+	if (!state.lastFinishedMission) {
+		setOrientationMessage('Nenhuma missão finalizada.', 'Finalize uma missão antes de repetir.');
 		return;
 	}
 
-	renderTasks(firstEmptyTask.id);
+	startRepeatedMissionFromData(state.lastFinishedMission, 'Missão repetida.', 'Execute novamente com foco.');
 }
 
-function requestDangerConfirmation(actionName, callback) {
-	const messages = {
-		restart: {
-			title: 'Reiniciar missão',
-			message: 'Tem certeza que deseja reiniciar a missão atual? O tempo voltará ao início e as tarefas serão desmarcadas.',
-			confirmLabel: 'Reiniciar'
-		},
-		cancel: {
-			title: 'Cancelar missão',
-			message: 'Tem certeza que deseja cancelar a missão atual? O progresso desta execução será perdido.',
-			confirmLabel: 'Cancelar'
-		},
-		'clear-history': {
-			title: 'Apagar histórico',
-			message: 'Tem certeza que deseja apagar todo o histórico? Essa ação não poderá ser desfeita.',
-			confirmLabel: 'Apagar'
-		},
-		'delete-history-item': {
-			title: 'Excluir registro',
-			message: 'Tem certeza que deseja excluir esta missão do histórico?',
-			confirmLabel: 'Excluir'
-		},
-		'clear-current': {
-			title: 'Limpar missão atual',
-			message: 'Tem certeza que deseja limpar a missão atual e voltar para a tela inicial?',
-			confirmLabel: 'Limpar'
-		},
-		'delete-template': {
-			title: 'Excluir modelo',
-			message: 'Tem certeza que deseja excluir este modelo salvo?',
-			confirmLabel: 'Excluir'
-		}
+function startRepeatedMissionFromData(missionData, line1, line2) {
+	stopCountdown();
+
+	state.activeMission = {
+		id: createId(),
+		title: missionData.title,
+		durationMinutes: missionData.durationMinutes,
+		totalSeconds: missionData.totalSeconds,
+		remainingSeconds: missionData.totalSeconds,
+		startedAt: new Date().toISOString(),
+		finishedAt: null,
+		finishReason: null,
+		savedToHistory: false,
+		tasks: missionData.tasks.map((task) => ({
+			id: createId(),
+			name: task.name,
+			completed: false
+		}))
 	};
 
-	const config = messages[actionName] ?? {
-		title: 'Confirmar ação',
-		message: 'Tem certeza que deseja continuar?',
-		confirmLabel: 'Confirmar'
-	};
+	state.tasks = state.activeMission.tasks;
 
-	openConfirmModal({
-		title: config.title,
-		message: config.message,
-		confirmLabel: config.confirmLabel,
-		onConfirm: callback
-	});
+	dom.missionTitleInput.value = state.activeMission.title;
+	dom.missionTimeInput.value = formatMinuteLabel(state.activeMission.durationMinutes);
+
+	dom.missionTitleInput.readOnly = true;
+	dom.missionTimeInput.readOnly = true;
+
+	dom.timerDisplay.classList.remove('is-warning', 'is-finished');
+
+	setAppState(APP_STATES.running);
+	renderTasks();
+	updateTimerDisplay(state.activeMission.remainingSeconds);
+	startCountdown();
+
+	setOrientationMessage(line1, line2);
 }
 
-function escapeHTML(value) {
-	return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-}
+/* =========================================================
+   08. Armazenamento local
+========================================================= */
 
 function getStorageList(key) {
 	const rawData = localStorage.getItem(key);
@@ -769,12 +908,7 @@ function getStorageList(key) {
 
 	try {
 		const parsedData = JSON.parse(rawData);
-
-		if (Array.isArray(parsedData)) {
-			return parsedData;
-		}
-
-		return [];
+		return Array.isArray(parsedData) ? parsedData : [];
 	} catch (error) {
 		console.error('Erro ao ler dados locais:', error);
 		return [];
@@ -784,6 +918,10 @@ function getStorageList(key) {
 function saveStorageList(key, list) {
 	localStorage.setItem(key, JSON.stringify(list));
 }
+
+/* =========================================================
+   09. Histórico
+========================================================= */
 
 function saveMissionToHistory(mission) {
 	if (mission.savedToHistory) {
@@ -813,91 +951,15 @@ function saveMissionToHistory(mission) {
 
 	history.unshift(historyItem);
 
-	const limitedHistory = history.slice(0, 30);
-
-	saveStorageList(STORAGE_KEYS.history, limitedHistory);
+	saveStorageList(STORAGE_KEYS.history, history.slice(0, 30));
 
 	mission.savedToHistory = true;
 
 	refreshHistoryIfOpen();
 }
 
-function saveCurrentMissionAsTemplate() {
-	if (!activeMission) {
-		setOrientationMessage('Nenhuma missão disponível.', 'Finalize ou crie uma missão primeiro.');
-		return;
-	}
-
-	const templates = getStorageList(STORAGE_KEYS.templates);
-
-	const template = {
-		id: createId(),
-		title: activeMission.title,
-		durationMinutes: activeMission.durationMinutes,
-		tasks: activeMission.tasks.map((task) => ({
-			id: createId(),
-			name: task.name,
-			completed: false
-		})),
-		createdAt: new Date().toISOString()
-	};
-
-	templates.unshift(template);
-
-	const limitedTemplates = templates.slice(0, 20);
-
-	saveStorageList(STORAGE_KEYS.templates, limitedTemplates);
-
-	setOrientationMessage('Modelo salvo com sucesso.', 'Você poderá reutilizá-lo depois.');
-
-	openTemplatesModal();
-}
-
-function repeatLastMission() {
-	if (!lastFinishedMission) {
-		setOrientationMessage('Nenhuma missão finalizada.', 'Finalize uma missão antes de repetir.');
-		return;
-	}
-
-	stopCountdown();
-
-	activeMission = {
-		id: createId(),
-		title: lastFinishedMission.title,
-		durationMinutes: lastFinishedMission.durationMinutes,
-		totalSeconds: lastFinishedMission.totalSeconds,
-		remainingSeconds: lastFinishedMission.totalSeconds,
-		startedAt: new Date().toISOString(),
-		finishedAt: null,
-		finishReason: null,
-		savedToHistory: false,
-		tasks: lastFinishedMission.tasks.map((task) => ({
-			id: createId(),
-			name: task.name,
-			completed: false
-		}))
-	};
-
-	tasks = activeMission.tasks;
-
-	missionTitleInput.value = activeMission.title;
-	missionTimeInput.value = formatMinuteLabel(activeMission.durationMinutes);
-
-	missionTitleInput.readOnly = true;
-	missionTimeInput.readOnly = true;
-
-	timerDisplay.classList.remove('is-warning', 'is-finished');
-
-	setAppState('running');
-	renderTasks();
-	updateTimerDisplay(activeMission.remainingSeconds);
-	startCountdown();
-
-	setOrientationMessage('Missão repetida.', 'Execute novamente com foco.');
-}
-
 function setHistoryOpen(isOpen) {
-	body.dataset.history = isOpen ? 'open' : 'closed';
+	dom.body.dataset.history = isOpen ? 'open' : 'closed';
 
 	if (isOpen) {
 		renderHistoryPanel();
@@ -909,100 +971,79 @@ function setHistoryOpen(isOpen) {
 }
 
 function toggleHistoryPanel() {
-	const isOpen = body.dataset.history === 'open';
+	const isOpen = dom.body.dataset.history === 'open';
 	setHistoryOpen(!isOpen);
 }
 
 function renderHistoryPanel() {
 	const history = getStorageList(STORAGE_KEYS.history);
 
-	historyListElement.innerHTML = '';
+	dom.historyList.innerHTML = '';
 
 	if (history.length === 0) {
-		historyListElement.innerHTML = `
-      <p class="history-empty">Nenhuma missão no histórico.</p>
-    `;
+		dom.historyList.innerHTML = `
+			<p class="history-empty">Nenhuma missão no histórico.</p>
+		`;
 		return;
 	}
 
 	history.forEach((mission) => {
-		const historyCard = document.createElement('article');
-		historyCard.className = 'history-card';
-		historyCard.dataset.historyId = mission.id;
-
-		const formattedDate = formatHistoryDate(mission.finishedAt);
-		const formattedTime = formatHistoryTime(mission.finishedAt);
-		const elapsedSeconds = mission.elapsedSeconds ?? calculateHistoryElapsedSeconds(mission);
-		const usedTimeLabel = formatDurationLabel(elapsedSeconds);
-
-		historyCard.innerHTML = `
-      <div class="history-card__top">
-        <div>
-          <h3 class="history-card__title">${escapeHTML(mission.title)}</h3>
-        </div>
-
-        <div class="history-card__date">
-          <span>${formattedDate}</span>
-          <span>${formattedTime}</span>
-        </div>
-      </div>
-
-      <div class="history-card__meta">
-         <span>${mission.completedTasks}/${mission.totalTasks} tarefas concluídas</span>
-         <span>${formatPlannedTimeLabel(mission.durationMinutes)}</span>
-         <span>${usedTimeLabel} usados</span>
-      </div>
-
-      <div class="history-card__actions">
-        <button class="button button--secondary history-repeat-button" type="button">
-          Repetir Missão
-        </button>
-
-        <button class="button button--danger history-delete-button" type="button" aria-label="Excluir missão do histórico">
-          X
-        </button>
-      </div>
-    `;
-
-		const repeatButton = historyCard.querySelector('.history-repeat-button');
-		const deleteButton = historyCard.querySelector('.history-delete-button');
-
-		repeatButton.addEventListener('click', () => {
-			repeatMissionFromHistory(mission.id);
-		});
-
-		deleteButton.addEventListener('click', () => {
-			deleteHistoryItem(mission.id);
-		});
-
-		historyListElement.appendChild(historyCard);
+		const historyCard = createHistoryCard(mission);
+		dom.historyList.appendChild(historyCard);
 	});
 }
 
-function formatPlannedTimeLabel(minutes) {
-	const label = formatMinuteLabel(minutes);
+function createHistoryCard(mission) {
+	const historyCard = document.createElement('article');
+	historyCard.className = 'history-card';
+	historyCard.dataset.historyId = mission.id;
 
-	if (!label) {
-		return 'Tempo não informado';
-	}
+	const formattedDate = formatHistoryDate(mission.finishedAt);
+	const formattedTime = formatHistoryTime(mission.finishedAt);
+	const elapsedSeconds = mission.elapsedSeconds ?? calculateHistoryElapsedSeconds(mission);
+	const usedTimeLabel = formatDurationLabel(elapsedSeconds);
 
-	return `Planejado: ${label}`;
-}
+	historyCard.innerHTML = `
+		<div class="history-card__top">
+			<div>
+				<h3 class="history-card__title">${escapeHTML(mission.title)}</h3>
+			</div>
 
-function calculateHistoryElapsedSeconds(mission) {
-	if (!mission) {
-		return 0;
-	}
+			<div class="history-card__date">
+				<span>${formattedDate}</span>
+				<span>${formattedTime}</span>
+			</div>
+		</div>
 
-	if (typeof mission.elapsedSeconds === 'number') {
-		return mission.elapsedSeconds;
-	}
+		<div class="history-card__meta">
+			<span>${mission.completedTasks}/${mission.totalTasks} tarefas concluídas</span>
+			<span>${formatPlannedTimeLabel(mission.durationMinutes)}</span>
+			<span>${usedTimeLabel} usados</span>
+		</div>
 
-	if (typeof mission.totalSeconds === 'number' && typeof mission.remainingSeconds === 'number') {
-		return Math.max(0, mission.totalSeconds - mission.remainingSeconds);
-	}
+		<div class="history-card__actions">
+			<button class="button button--secondary history-repeat-button" type="button">
+				Repetir Missão
+			</button>
 
-	return 0;
+			<button class="button button--danger history-delete-button" type="button" aria-label="Excluir missão do histórico">
+				X
+			</button>
+		</div>
+	`;
+
+	const repeatButton = historyCard.querySelector('.history-repeat-button');
+	const deleteButton = historyCard.querySelector('.history-delete-button');
+
+	repeatButton.addEventListener('click', () => {
+		repeatMissionFromHistory(mission.id);
+	});
+
+	deleteButton.addEventListener('click', () => {
+		deleteHistoryItem(mission.id);
+	});
+
+	return historyCard;
 }
 
 function formatHistoryDate(isoDate) {
@@ -1028,7 +1069,7 @@ function formatHistoryTime(isoDate) {
 }
 
 function repeatMissionFromHistory(historyId) {
-	if (appState === 'running' || appState === 'paused') {
+	if (state.screen === APP_STATES.running || state.screen === APP_STATES.paused) {
 		setOrientationMessage('Finalize ou cancele a missão atual', 'antes de repetir outra missão.');
 		return;
 	}
@@ -1042,42 +1083,9 @@ function repeatMissionFromHistory(historyId) {
 		return;
 	}
 
-	stopCountdown();
+	state.lastFinishedMission = cloneData(selectedMission);
 
-	activeMission = {
-		id: createId(),
-		title: selectedMission.title,
-		durationMinutes: selectedMission.durationMinutes,
-		totalSeconds: selectedMission.totalSeconds,
-		remainingSeconds: selectedMission.totalSeconds,
-		startedAt: new Date().toISOString(),
-		finishedAt: null,
-		finishReason: null,
-		savedToHistory: false,
-		tasks: selectedMission.tasks.map((task) => ({
-			id: createId(),
-			name: task.name,
-			completed: false
-		}))
-	};
-
-	tasks = activeMission.tasks;
-	lastFinishedMission = structuredClone(activeMission);
-
-	missionTitleInput.value = activeMission.title;
-	missionTimeInput.value = formatMinuteLabel(activeMission.durationMinutes);
-
-	missionTitleInput.readOnly = true;
-	missionTimeInput.readOnly = true;
-
-	timerDisplay.classList.remove('is-warning', 'is-finished');
-
-	setAppState('running');
-	renderTasks();
-	updateTimerDisplay(activeMission.remainingSeconds);
-	startCountdown();
-
-	setOrientationMessage('Missão repetida do histórico.', 'Execute novamente com foco.');
+	startRepeatedMissionFromData(selectedMission, 'Missão repetida do histórico.', 'Execute novamente com foco.');
 }
 
 function deleteHistoryItem(historyId) {
@@ -1102,7 +1110,7 @@ function clearHistory() {
 }
 
 function isHistoryOpen() {
-	return body.dataset.history === 'open';
+	return dom.body.dataset.history === 'open';
 }
 
 function refreshHistoryIfOpen() {
@@ -1113,35 +1121,86 @@ function refreshHistoryIfOpen() {
 	renderHistoryPanel();
 }
 
-function openModal(modalElement) {
-	modalBackdrop.hidden = false;
+/* =========================================================
+   10. Modais
+========================================================= */
 
-	confirmModal.hidden = true;
-	templatesModal.hidden = true;
+function openModal(modalElement) {
+	dom.modalBackdrop.hidden = false;
+
+	dom.confirmModal.hidden = true;
+	dom.templatesModal.hidden = true;
 
 	modalElement.hidden = false;
 }
 
 function closeModals() {
-	modalBackdrop.hidden = true;
-	confirmModal.hidden = true;
-	templatesModal.hidden = true;
-	pendingConfirmAction = null;
+	dom.modalBackdrop.hidden = true;
+	dom.confirmModal.hidden = true;
+	dom.templatesModal.hidden = true;
+	state.pendingConfirmAction = null;
 }
 
 function openConfirmModal({title, message, confirmLabel = 'Confirmar', onConfirm}) {
-	pendingConfirmAction = onConfirm;
+	state.pendingConfirmAction = onConfirm;
 
-	confirmModalTitle.textContent = title;
-	confirmModalMessage.textContent = message;
-	confirmModalConfirm.textContent = confirmLabel;
+	dom.confirmModalTitle.textContent = title;
+	dom.confirmModalMessage.textContent = message;
+	dom.confirmModalConfirm.textContent = confirmLabel;
 
-	openModal(confirmModal);
+	openModal(dom.confirmModal);
+}
+
+function requestDangerConfirmation(actionName, callback) {
+	const config = DANGER_CONFIRM_MESSAGES[actionName] ?? {
+		title: 'Confirmar ação',
+		message: 'Tem certeza que deseja continuar?',
+		confirmLabel: 'Confirmar'
+	};
+
+	openConfirmModal({
+		title: config.title,
+		message: config.message,
+		confirmLabel: config.confirmLabel,
+		onConfirm: callback
+	});
+}
+
+/* =========================================================
+   11. Modelos
+========================================================= */
+
+function saveCurrentMissionAsTemplate() {
+	if (!state.activeMission) {
+		setOrientationMessage('Nenhuma missão disponível.', 'Finalize ou crie uma missão primeiro.');
+		return;
+	}
+
+	const templates = getStorageList(STORAGE_KEYS.templates);
+
+	const template = {
+		id: createId(),
+		title: state.activeMission.title,
+		durationMinutes: state.activeMission.durationMinutes,
+		tasks: state.activeMission.tasks.map((task) => ({
+			id: createId(),
+			name: task.name,
+			completed: false
+		})),
+		createdAt: new Date().toISOString()
+	};
+
+	templates.unshift(template);
+	saveStorageList(STORAGE_KEYS.templates, templates.slice(0, 20));
+
+	setOrientationMessage('Modelo salvo com sucesso.', 'Você poderá reutilizá-lo depois.');
+
+	openTemplatesModal();
 }
 
 function openTemplatesModal() {
 	renderTemplatesModal();
-	openModal(templatesModal);
+	openModal(dom.templatesModal);
 
 	setOrientationMessage('Modelos abertos.', 'Escolha uma missão salva para reutilizar.');
 }
@@ -1149,61 +1208,66 @@ function openTemplatesModal() {
 function renderTemplatesModal() {
 	const templates = getStorageList(STORAGE_KEYS.templates);
 
-	templateListElement.innerHTML = '';
+	dom.templateList.innerHTML = '';
 
 	if (templates.length === 0) {
-		templateListElement.innerHTML = `
-      <p class="modal-empty">Nenhum modelo salvo ainda.</p>
-    `;
+		dom.templateList.innerHTML = `
+			<p class="modal-empty">Nenhum modelo salvo ainda.</p>
+		`;
 		return;
 	}
 
 	templates.forEach((template) => {
-		const templateCard = document.createElement('article');
-		templateCard.className = 'template-card';
-		templateCard.dataset.templateId = template.id;
-
-		const formattedDate = template.createdAt ? new Date(template.createdAt).toLocaleDateString('pt-BR') : '--/--/----';
-
-		templateCard.innerHTML = `
-      <div class="template-card__top">
-        <h3 class="template-card__title">${escapeHTML(template.title)}</h3>
-        <span>${formattedDate}</span>
-      </div>
-
-      <div class="template-card__meta">
-        <span>${formatPlannedTimeLabel(template.durationMinutes)}</span>
-        <span>${template.tasks.length} tarefa(s)</span>
-      </div>
-
-      <div class="template-card__actions">
-        <button class="button button--secondary template-use-button" type="button">
-          Usar Modelo
-        </button>
-
-        <button class="button button--danger template-delete-button" type="button">
-          X
-        </button>
-      </div>
-    `;
-
-		const useButton = templateCard.querySelector('.template-use-button');
-		const deleteButton = templateCard.querySelector('.template-delete-button');
-
-		useButton.addEventListener('click', () => {
-			useTemplate(template.id);
-		});
-
-		deleteButton.addEventListener('click', () => {
-			deleteTemplate(template.id);
-		});
-
-		templateListElement.appendChild(templateCard);
+		const templateCard = createTemplateCard(template);
+		dom.templateList.appendChild(templateCard);
 	});
 }
 
+function createTemplateCard(template) {
+	const templateCard = document.createElement('article');
+	templateCard.className = 'template-card';
+	templateCard.dataset.templateId = template.id;
+
+	const formattedDate = template.createdAt ? new Date(template.createdAt).toLocaleDateString('pt-BR') : '--/--/----';
+
+	templateCard.innerHTML = `
+		<div class="template-card__top">
+			<h3 class="template-card__title">${escapeHTML(template.title)}</h3>
+			<span>${formattedDate}</span>
+		</div>
+
+		<div class="template-card__meta">
+			<span>${formatPlannedTimeLabel(template.durationMinutes)}</span>
+			<span>${template.tasks.length} tarefa(s)</span>
+		</div>
+
+		<div class="template-card__actions">
+			<button class="button button--secondary template-use-button" type="button">
+				Usar Modelo
+			</button>
+
+			<button class="button button--danger template-delete-button" type="button">
+				X
+			</button>
+		</div>
+	`;
+
+	const useButton = templateCard.querySelector('.template-use-button');
+	const deleteButton = templateCard.querySelector('.template-delete-button');
+
+	useButton.addEventListener('click', () => {
+		useTemplate(template.id);
+	});
+
+	deleteButton.addEventListener('click', () => {
+		deleteTemplate(template.id);
+	});
+
+	return templateCard;
+}
+
 function useTemplate(templateId) {
-	if (appState === 'running' || appState === 'paused') {
+	if (state.screen === APP_STATES.running || state.screen === APP_STATES.paused) {
 		setOrientationMessage('Finalize ou cancele a missão atual', 'antes de usar um modelo.');
 		return;
 	}
@@ -1219,24 +1283,23 @@ function useTemplate(templateId) {
 
 	stopCountdown();
 
-	activeMission = null;
-
-	tasks = selectedTemplate.tasks.map((task) => ({
+	state.activeMission = null;
+	state.tasks = selectedTemplate.tasks.map((task) => ({
 		id: createId(),
 		name: task.name,
 		completed: false
 	}));
 
-	missionTitleInput.value = selectedTemplate.title;
-	missionTimeInput.value = formatMinuteLabel(selectedTemplate.durationMinutes);
+	dom.missionTitleInput.value = selectedTemplate.title;
+	dom.missionTimeInput.value = formatMinuteLabel(selectedTemplate.durationMinutes);
 
-	missionTitleInput.readOnly = false;
-	missionTimeInput.readOnly = false;
+	dom.missionTitleInput.readOnly = false;
+	dom.missionTimeInput.readOnly = false;
 
-	timerDisplay.classList.remove('is-warning', 'is-finished');
-	timerDisplayText.textContent = formatTime(selectedTemplate.durationMinutes * 60);
+	dom.timerDisplay.classList.remove('is-warning', 'is-finished');
+	updateTimerDisplay(selectedTemplate.durationMinutes * 60);
 
-	setAppState('initial');
+	setAppState(APP_STATES.initial);
 	renderTasks();
 	closeModals();
 
@@ -1255,104 +1318,120 @@ function deleteTemplate(templateId) {
 	});
 }
 
-// Event Listeners
+/* =========================================================
+   12. Eventos
+========================================================= */
 
-missionForm.addEventListener('submit', (event) => {
-	event.preventDefault();
-});
+function bindEvents() {
+	dom.missionForm.addEventListener('submit', (event) => {
+		event.preventDefault();
+	});
 
-addTaskButton.addEventListener('click', addTask);
+	dom.addTaskButton.addEventListener('click', addTask);
 
-startMissionButton.addEventListener('click', () => {
-	if (appState === 'initial') {
+	dom.startMissionButton.addEventListener('click', handleMainActionClick);
+
+	dom.pauseToggleButton.addEventListener('click', togglePauseMission);
+
+	dom.restartMissionButton.addEventListener('click', () => {
+		requestDangerConfirmation('restart', restartMission);
+	});
+
+	dom.cancelMissionButton.addEventListener('click', () => {
+		requestDangerConfirmation('cancel', cancelMission);
+	});
+
+	dom.clearCurrentMissionButton.addEventListener('click', () => {
+		requestDangerConfirmation('clear-current', resetToNewMission);
+	});
+
+	dom.repeatMissionButton.addEventListener('click', repeatLastMission);
+	dom.saveTemplateButton.addEventListener('click', saveCurrentMissionAsTemplate);
+
+	dom.historyButton.addEventListener('click', toggleHistoryPanel);
+
+	dom.closeHistoryButton.addEventListener('click', () => {
+		setHistoryOpen(false);
+	});
+
+	dom.clearHistoryButton.addEventListener('click', clearHistory);
+
+	dom.templatesButton.addEventListener('click', openTemplatesModal);
+
+	dom.templatesModalClose.addEventListener('click', closeModals);
+	dom.confirmModalClose.addEventListener('click', closeModals);
+	dom.confirmModalCancel.addEventListener('click', closeModals);
+
+	dom.confirmModalConfirm.addEventListener('click', () => {
+		if (typeof state.pendingConfirmAction === 'function') {
+			state.pendingConfirmAction();
+		}
+
+		closeModals();
+	});
+
+	dom.modalBackdrop.addEventListener('click', (event) => {
+		if (event.target === dom.modalBackdrop) {
+			closeModals();
+		}
+	});
+
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape' && !dom.modalBackdrop.hidden) {
+			closeModals();
+		}
+	});
+
+	dom.missionTimeInput.addEventListener('input', handleMissionTimeInput);
+
+	dom.missionTitleInput.addEventListener('focus', () => {
+		if (state.screen !== APP_STATES.initial) {
+			return;
+		}
+
+		setOrientationMessage('Nomeie sua missão.', 'Seja direto e específico.');
+	});
+
+	dom.missionTimeInput.addEventListener('blur', normalizeMissionTimeInput);
+
+	dom.missionTimeInput.addEventListener('focus', () => {
+		if (state.screen !== APP_STATES.initial) {
+			return;
+		}
+
+		prepareMissionTimeEditing();
+		setOrientationMessage('Escolha um tempo limite.', 'Comece com blocos pequenos.');
+	});
+}
+
+function handleMainActionClick() {
+	if (state.screen === APP_STATES.initial) {
 		startMission();
 		return;
 	}
 
-	if (appState === 'running' || appState === 'paused') {
-		finishMission('manual');
+	if (state.screen === APP_STATES.running || state.screen === APP_STATES.paused) {
+		finishMission(FINISH_REASONS.manual);
 		return;
 	}
 
-	if (appState === 'finished') {
+	if (state.screen === APP_STATES.finished) {
 		resetToNewMission();
 	}
-});
+}
 
-pauseToggleButton.addEventListener('click', togglePauseMission);
+/* =========================================================
+   13. Inicialização
+========================================================= */
 
-restartMissionButton.addEventListener('click', () => {
-	requestDangerConfirmation('restart', restartMission);
-});
+function initApp() {
+	bindEvents();
 
-cancelMissionButton.addEventListener('click', () => {
-	requestDangerConfirmation('cancel', cancelMission);
-});
+	renderTasks();
+	updateTimerPreview();
+	setAppState(APP_STATES.initial);
 
-clearCurrentMissionButton.addEventListener('click', () => {
-	requestDangerConfirmation('clear-current', resetToNewMission);
-});
+	dom.body.dataset.history = 'closed';
+}
 
-repeatMissionButton.addEventListener('click', repeatLastMission);
-
-saveTemplateButton.addEventListener('click', saveCurrentMissionAsTemplate);
-
-historyButton.addEventListener('click', toggleHistoryPanel);
-
-closeHistoryButton.addEventListener('click', () => {
-	setHistoryOpen(false);
-});
-
-clearHistoryButton.addEventListener('click', clearHistory);
-
-templatesButton.addEventListener('click', openTemplatesModal);
-
-templatesModalClose.addEventListener('click', closeModals);
-confirmModalClose.addEventListener('click', closeModals);
-confirmModalCancel.addEventListener('click', closeModals);
-
-confirmModalConfirm.addEventListener('click', () => {
-	if (typeof pendingConfirmAction === 'function') {
-		pendingConfirmAction();
-	}
-
-	closeModals();
-});
-
-modalBackdrop.addEventListener('click', (event) => {
-	if (event.target === modalBackdrop) {
-		closeModals();
-	}
-});
-
-document.addEventListener('keydown', (event) => {
-	if (event.key === 'Escape' && !modalBackdrop.hidden) {
-		closeModals();
-	}
-});
-
-missionTimeInput.addEventListener('input', handleMissionTimeInput);
-
-missionTitleInput.addEventListener('focus', () => {
-	if (appState !== 'initial') {
-		return;
-	}
-
-	setOrientationMessage('Nomeie sua missão.', 'Seja direto e específico.');
-});
-
-missionTimeInput.addEventListener('blur', normalizeMissionTimeInput);
-
-missionTimeInput.addEventListener('focus', () => {
-	if (appState !== 'initial') {
-		return;
-	}
-
-	prepareMissionTimeEditing();
-	setOrientationMessage('Escolha um tempo limite.', 'Comece com blocos pequenos.');
-});
-
-renderTasks();
-updateTimerPreview();
-setAppState('initial');
-body.dataset.history = 'closed';
+initApp();
